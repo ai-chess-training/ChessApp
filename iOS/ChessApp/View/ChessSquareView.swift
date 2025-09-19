@@ -14,19 +14,21 @@ struct ChessSquareView: View {
     @Bindable var gameState: ChessGameState
     
     private var squareColor: Color {
-        let baseColor = (position.row + position.col) % 2 == 0 ? Color.brown.opacity(0.05) : Color.brown.opacity(0.8)
-        
-        // Highlight king in check
+        // Priority order: King in check (highest) > Available moves > Base color (lowest)
+
+        // Highest priority: King in check
         if gameState.isKingInCheckAt(position: position) {
-            return Color.red.opacity(0.6)
+            return .red.opacity(0.6)
         }
-        
-        // Highlight available moves
+
+        // Medium priority: Available moves
         if gameState.isSquareAvailable(position: position) {
-            return Color.green.opacity(0.4)
+            return .green.opacity(0.4)
         }
-        
-        return baseColor
+
+        // Default: Chess board pattern
+        let isLightSquare = (position.row + position.col) % 2 == 0
+        return isLightSquare ? .brown.opacity(0.05) : .brown.opacity(0.8)
     }
     
     var body: some View {
@@ -55,10 +57,10 @@ struct ChessSquareView: View {
                 if let piece = piece {
                     GeometryReader { geometry in
                         let squareSize = geometry.size.width //we know it is a square, only one is needed for width and height
-                        let cumstomFont = Font.system(size: squareSize * 0.7)
+                        let customFont = Font.system(size: squareSize * 0.7)
                         
                         Text(piece.type.symbol(for: piece.color))
-                            .font(cumstomFont)
+                            .font(customFont)
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
                             .frame(width: geometry.size.width, height: geometry.size.height)
