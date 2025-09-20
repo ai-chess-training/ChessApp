@@ -17,6 +17,13 @@ class ChessGameState {
     var capturedPieces: [ChessPiece] = []
     var moveHistory: [String] = []
     var moveCount = 0
+
+    // MARK: - Haptic Feedback State
+
+    var captureTrigger = false
+    var checkmateTrigger = false
+    var checkTrigger = false
+    var stalemateTrigger = false
     
     // Chess rules engine and move history
     var ruleEngine: ChessRuleEngine?
@@ -191,6 +198,7 @@ class ChessGameState {
         // Handle captured piece
         if let captured = capturedPiece {
             capturedPieces.append(captured)
+            captureTrigger.toggle()
         }
         
         // Record the move
@@ -215,13 +223,19 @@ class ChessGameState {
     
     private func updateGameStatus() {
         guard let ruleEngine = ruleEngine else { return }
-        
+
         if ruleEngine.isCheckmate(color: currentPlayer, gameState: self) {
             gameStatus = .checkmate(winner: currentPlayer == .white ? .black : .white)
+            checkmateTrigger.toggle()
         } else if ruleEngine.isStalemate(color: currentPlayer, gameState: self) {
             gameStatus = .stalemate
+            stalemateTrigger.toggle()
         } else {
             gameStatus = .inProgress
+            // Check if current player is in check
+            if isKingInCheck(color: currentPlayer) {
+                checkTrigger.toggle()
+            }
         }
     }
     

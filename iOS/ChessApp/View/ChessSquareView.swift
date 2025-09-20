@@ -8,25 +8,49 @@
 import SwiftUI
 
 struct ChessSquareView: View {
+
+    // MARK: - Constants
+
+    private struct SquareConstants {
+        static let availableMoveDotSize: CGFloat = 12
+        static let selectionBorderWidth: CGFloat = 3
+        static let pieceFontScale: CGFloat = 0.7
+        static let shadowRadius: CGFloat = 1
+        static let shadowOpacity: Double = 0.3
+        static let squareShadowRadius: CGFloat = 1
+        static let squareShadowOpacity: Double = 0.1
+    }
+
+    // MARK: - Properties
+
     let position: ChessPosition
     let piece: ChessPiece?
     let isSelected: Bool
     @Bindable var gameState: ChessGameState
+    let pieceAnimationNamespace: Namespace.ID
+
+    // MARK: - Haptic Feedback State
+
+    @State private var pieceSelectedTrigger = false
+    @State private var moveSuccessTrigger = false
+    @State private var moveFailTrigger = false
     
     private var squareColor: Color {
-        let baseColor = (position.row + position.col) % 2 == 0 ? Color.brown.opacity(0.05) : Color.brown.opacity(0.8)
-        
-        // Highlight king in check
+        // Priority order: King in check (highest) > Available moves > Base color (lowest)
+
+        // Highest priority: King in check
         if gameState.isKingInCheckAt(position: position) {
-            return Color.red.opacity(0.6)
+            return .red.opacity(0.6)
         }
-        
-        // Highlight available moves
+
+        // Medium priority: Available moves
         if gameState.isSquareAvailable(position: position) {
-            return Color.green.opacity(0.4)
+            return .green.opacity(0.4)
         }
-        
-        return baseColor
+
+        // Default: Chess board pattern
+        let isLightSquare = (position.row + position.col) % 2 == 0
+        return isLightSquare ? .brown.opacity(0.05) : .brown.opacity(0.8)
     }
     
     var body: some View {
@@ -41,60 +65,91 @@ struct ChessSquareView: View {
                     .fill(squareColor)
                     .overlay(
                         Rectangle()
-                            .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 3)
+                            .stroke(isSelected ? Color.blue : Color.clear, lineWidth: SquareConstants.selectionBorderWidth)
                     )
-                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
+                    .shadow(color: Color.black.opacity(SquareConstants.squareShadowOpacity), radius: SquareConstants.squareShadowRadius, x: 0, y: 1)
                 
                 // Show dot for available moves
                 if gameState.isSquareAvailable(position: position) && piece == nil {
                     Circle()
                         .fill(Color.green.opacity(0.6))
-                        .frame(width: 12, height: 12)
+                        .frame(width: SquareConstants.availableMoveDotSize, height: SquareConstants.availableMoveDotSize)
                 }
                 
                 if let piece = piece {
                     GeometryReader { geometry in
-                        let squareSize = geometry.size.width //we know it is a square, only one is needed for width and height
-                        let cumstomFont = Font.system(size: squareSize * 0.7)
-                        
+                        let squareSize = geometry.size.width
+                        let customFont = Font.system(size: squareSize * SquareConstants.pieceFontScale)
+
                         Text(piece.type.symbol(for: piece.color))
-                            .font(cumstomFont)
+                            .font(customFont)
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
                             .frame(width: geometry.size.width, height: geometry.size.height)
-                            .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
+                            .shadow(color: .black.opacity(SquareConstants.shadowOpacity), radius: SquareConstants.shadowRadius, x: 0, y: 1)
+                            .matchedGeometryEffect(id: "\(piece.type.rawValue)-\(piece.color.rawValue)-\(position.row)-\(position.col)", in: pieceAnimationNamespace)
                     }
                 }
             }
         }
         .buttonStyle(PlainButtonStyle())
+        .sensoryFeedback(.impact(weight: .light), trigger: pieceSelectedTrigger)
+        .sensoryFeedback(.impact(weight: .medium), trigger: moveSuccessTrigger)
+        .sensoryFeedback(.error, trigger: moveFailTrigger)
     }
     
     private func handleSquareTap() {
         if let selectedSquare = gameState.selectedSquare {
-            if selectedSquare == position {
-                // Deselect current square
-                gameState.selectedSquare = nil
-            } else {
-                // Attempt to move piece with validation
-                let moveSuccessful = gameState.attemptMove(from: selectedSquare, to: position)
-                if !moveSuccessful {
-                    // If move failed, deselect the piece
-                    gameState.selectedSquare = nil
-                }
-            }
+            handleTapWithSelection(selectedSquare)
         } else {
-            // Select square if it has a piece of current player
-            if let piece = piece, piece.color == gameState.currentPlayer {
-                gameState.selectSquare(position)
-            }
+            handleTapWithoutSelection()
+        }
+    }
+
+    private func handleTapWithSelection(_ selectedSquare: ChessPosition) {
+        if selectedSquare == position {
+            deselectSquare()
+        } else {
+            attemptMoveOrDeselect(from: selectedSquare)
+        }
+    }
+
+    private func handleTapWithoutSelection() {
+        if let piece = piece, piece.color == gameState.currentPlayer {
+            selectSquare()
+        }
+    }
+
+    private func deselectSquare() {
+        gameState.selectedSquare = nil
+    }
+
+    private func selectSquare() {
+        pieceSelectedTrigger.toggle()
+        gameState.selectSquare(position)
+    }
+
+    private func attemptMoveOrDeselect(from selectedSquare: ChessPosition) {
+        let moveSuccessful = gameState.attemptMove(from: selectedSquare, to: position)
+
+        if moveSuccessful {
+            moveSuccessTrigger.toggle()
+        } else {
+            moveFailTrigger.toggle()
+            deselectSquare()
         }
     }
 }
 
 #Preview {
-    ChessSquareView(position: ChessPosition(row: 0, col: 0), piece: ChessGameState().board[0][0],
-                    isSelected: false,
-                    gameState: ChessGameState())
+    @Previewable @Namespace var testNamespace
+
+    return ChessSquareView(
+        position: ChessPosition(row: 0, col: 0),
+        piece: ChessGameState().board[0][0],
+        isSelected: false,
+        gameState: ChessGameState(),
+        pieceAnimationNamespace: testNamespace
+    )
     .frame(width: 150, height: 150)
 }

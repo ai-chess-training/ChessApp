@@ -55,53 +55,76 @@ struct ContentView: View {
         NavigationSplitView {
             // Left sidebar with controls
             ScrollView {
-                VStack(spacing: 20) {
-                    UserProfileView(authManager: authManager)
+                VStack {
                     GameStatusView(gameState: gameState)
                     GameControlsView(gameState: gameState)
                 }
                 .padding()
             }
             .navigationTitle(String(localized: "Game Controls"))
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    UserProfileView(authManager: authManager)
+                }
+            }
         } detail: {
             VStack {
-                Text("Chess", bundle: .main, comment: "App name and navigation title")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .padding(.top)
-                
                 Spacer()
-                
+
                 ChessBoardView(gameState: gameState)
-                
+
                 Spacer()
             }
             .padding()
-            .navigationBarHidden(true)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(String(localized: "Game One"))
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                }
+            }
+            .sensoryFeedback(.impact(weight: .heavy), trigger: gameState.captureTrigger)
+            .sensoryFeedback(.success, trigger: gameState.checkmateTrigger)
+            .sensoryFeedback(.error, trigger: gameState.checkTrigger)
+            .sensoryFeedback(.warning, trigger: gameState.stalemateTrigger)
         }
     }
     
     // MARK: - Single Column Layout (iPhone + iPad Portrait)
     private var singleColumnLayout: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack {
-                    UserProfileView(authManager: authManager)
-                        .padding(.horizontal)
                     GameStatusView(gameState: gameState)
                     ChessBoardView(gameState: gameState)
                     GameControlsView(gameState: gameState)
                 }
+                .padding(.top)
                 .padding()
             }
             .navigationTitle(String(localized: "Chess"))
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    UserProfileView(authManager: authManager)
+                }
+            }
+            .sensoryFeedback(.impact(weight: .heavy), trigger: gameState.captureTrigger)
+            .sensoryFeedback(.success, trigger: gameState.checkmateTrigger)
+            .sensoryFeedback(.error, trigger: gameState.checkTrigger)
+            .sensoryFeedback(.warning, trigger: gameState.stalemateTrigger)
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
-#Preview {
+
+#Preview("Portrait", traits: .portrait) {
+    ContentView()
+        .environment(AuthenticationManager())
+}
+
+#Preview("Landscape", traits: .landscapeLeft) {
     ContentView()
         .environment(AuthenticationManager())
 }

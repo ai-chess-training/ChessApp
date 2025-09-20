@@ -9,26 +9,38 @@ import SwiftUI
 
 struct GameControlsView: View {
     @Bindable var gameState: ChessGameState
+
+    // MARK: - Haptic Feedback State
+
+    @State private var resetTrigger = false
+    @State private var undoTrigger = false
+    @State private var resignTrigger = false
     
     var body: some View {
         VStack(spacing: 15) {
             HStack(spacing: 20) {
                 Button(String(localized: "Reset", comment: "Reset game button text")) {
+                    resetTrigger.toggle()
                     gameState.resetGame()
                 }
                 .buttonStyle(.borderedProminent)
+                .sensoryFeedback(.impact(weight: .light), trigger: resetTrigger)
                 
                 Button(String(localized: "Undo", comment: "Undo move button text")) {
+                    undoTrigger.toggle()
                     let _ = gameState.undoLastMove()
                 }
                 .buttonStyle(.bordered)
                 .disabled(!gameState.canUndo())
+                .sensoryFeedback(.impact(weight: .medium), trigger: undoTrigger)
                 
                 Button(String(localized: "Resign", comment: "Resign game button text")) {
+                    resignTrigger.toggle()
                     gameState.gameStatus = .checkmate(winner: gameState.currentPlayer == .white ? .black : .white)
                 }
                 .buttonStyle(.bordered)
                 .foregroundColor(.red)
+                .sensoryFeedback(.impact(weight: .heavy), trigger: resignTrigger)
             }
             
             // Debug toggle (small and unobtrusive)
