@@ -18,6 +18,9 @@ struct GameControlsView: View {
     
     var body: some View {
         VStack(spacing: 15) {
+            // Chess Coach Feedback
+            CoachingFeedbackView(gameState: gameState)
+
             HStack(spacing: 20) {
                 Button(String(localized: "Reset", comment: "Reset game button text")) {
                     resetTrigger.toggle()
@@ -25,7 +28,7 @@ struct GameControlsView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .sensoryFeedback(.impact(weight: .light), trigger: resetTrigger)
-                
+
                 Button(String(localized: "Undo", comment: "Undo move button text")) {
                     undoTrigger.toggle()
                     let _ = gameState.undoLastMove()
@@ -33,7 +36,7 @@ struct GameControlsView: View {
                 .buttonStyle(.bordered)
                 .disabled(!gameState.canUndo())
                 .sensoryFeedback(.impact(weight: .medium), trigger: undoTrigger)
-                
+
                 Button(String(localized: "Resign", comment: "Resign game button text")) {
                     resignTrigger.toggle()
                     gameState.gameStatus = .checkmate(winner: gameState.currentPlayer == .white ? .black : .white)

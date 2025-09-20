@@ -1,10 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "%@:" : {
 
     },
+    "•" : {
+
+    },
+    "Analyzing move..." : {
+
+    },
     "Are you sure you want to sign out?" : {
+
+    },
+    "Better: %@" : {
 
     },
     "Cancel" : {
@@ -127,6 +139,9 @@
         }
       }
     },
+    "Chess Coach" : {
+
+    },
     "ChessApp" : {
 
     },
@@ -153,6 +168,12 @@
           }
         }
       }
+    },
+    "Concepts" : {
+
+    },
+    "Connected" : {
+
     },
     "Continue as Guest" : {
 
@@ -205,6 +226,12 @@
         }
       }
     },
+    "Detailed Analysis" : {
+
+    },
+    "Disconnected" : {
+
+    },
     "Draw!" : {
       "comment" : "Alert message when game ends in draw",
       "extractionState" : "manual",
@@ -254,6 +281,12 @@
       }
     },
     "Game One" : {
+
+    },
+    "Make a move to receive coaching feedback" : {
+
+    },
+    "Move %lld" : {
 
     },
     "Move History (Debug)" : {
@@ -358,6 +391,9 @@
     "Play chess with friends around the world" : {
 
     },
+    "Practice Suggestions" : {
+
+    },
     "Reset" : {
       "comment" : "Reset game button text",
       "extractionState" : "manual",
@@ -406,6 +442,9 @@
         }
       }
     },
+    "Retry" : {
+
+    },
     "Settings" : {
 
     },
@@ -419,6 +458,9 @@
 
     },
     "Sign Out" : {
+
+    },
+    "Skill Level" : {
 
     },
     "Stalemate!" : {

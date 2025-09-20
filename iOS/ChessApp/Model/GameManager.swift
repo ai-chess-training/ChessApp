@@ -9,7 +9,7 @@ import Observation
 import Foundation
 
 @Observable
-class ChessGameState {
+class ChessGameState: @unchecked Sendable {
     var selectedSquare: ChessPosition?
     var board: [[ChessPiece?]] = Array(repeating: Array(repeating: nil, count: 8), count: 8)
     var currentPlayer: ChessColor = .white
@@ -24,6 +24,14 @@ class ChessGameState {
     var checkmateTrigger = false
     var checkTrigger = false
     var stalemateTrigger = false
+
+    // MARK: - Chess Coach API Integration
+
+    var chessCoachAPI: ChessCoachAPI
+    var isCoachingEnabled: Bool = false
+    var currentMoveFeedback: MoveFeedback?
+    var isAnalyzingMove: Bool = false
+    var skillLevel: SkillLevel = .intermediate
     
     // Chess rules engine and move history
     var ruleEngine: ChessRuleEngine?
@@ -51,6 +59,7 @@ class ChessGameState {
     var gameStartTime: Date?
     
     init() {
+        chessCoachAPI = ChessCoachAPI()
         ruleEngine = ChessRuleEngine()
         gameStartTime = Date()
         setupInitialBoard()
@@ -76,7 +85,16 @@ class ChessGameState {
         blackKingPosition = ChessPosition(row: 0, col: 4)
         gameStartTime = Date()
         moveHistoryManager.clear()
+        currentMoveFeedback = nil
+        isAnalyzingMove = false
         setupInitialBoard()
+
+        // Start new coaching session if enabled
+        if isCoachingEnabled {
+            Task {
+                await startNewCoachingSession()
+            }
+        }
     }
     
     private func setupInitialBoard() {
@@ -217,7 +235,14 @@ class ChessGameState {
         
         // Check for game ending conditions
         updateGameStatus()
-        
+
+        // Analyze the move if coaching is enabled
+        if isCoachingEnabled {
+            Task {
+                await analyzeLastMove()
+            }
+        }
+
         return true
     }
     
@@ -404,6 +429,74 @@ class ChessGameState {
         showingPawnPromotion = false
         promotionMove = nil
         selectedSquare = nil
+    }
+
+    // MARK: - Chess Coach Integration
+
+    func enableCoaching(skillLevel: SkillLevel = .intermediate) {
+        self.skillLevel = skillLevel
+        isCoachingEnabled = true
+        Task {
+            await startNewCoachingSession()
+        }
+    }
+
+    func disableCoaching() {
+        isCoachingEnabled = false
+        currentMoveFeedback = nil
+    }
+
+    @MainActor
+    private func startNewCoachingSession() async {
+        guard isCoachingEnabled else { return }
+
+        do {
+            let _ = try await chessCoachAPI.startNewGame(skillLevel: skillLevel)
+            print("Started new coaching session with skill level: \(skillLevel.displayName)")
+        } catch {
+            print("Failed to start coaching session: \(error.localizedDescription)")
+        }
+    }
+
+    func analyzeLastMove() async {
+        guard isCoachingEnabled,
+              let lastMoveRecord = moveHistoryManager.getLastMove(),
+              !isAnalyzingMove else { return }
+
+        await MainActor.run {
+            isAnalyzingMove = true
+        }
+
+        do {
+            // Convert move to algebraic notation
+            let moveString = convertMoveToAlgebraic(lastMoveRecord)
+            let analysis = try await chessCoachAPI.analyzeCurrentMove(moveString)
+
+            await MainActor.run {
+                currentMoveFeedback = analysis.humanFeedback
+                isAnalyzingMove = false
+            }
+
+            print("Move analysis complete: \(analysis.humanFeedback?.basic ?? "No feedback")")
+
+        } catch {
+            await MainActor.run {
+                isAnalyzingMove = false
+            }
+            print("Failed to analyze move: \(error.localizedDescription)")
+        }
+    }
+
+    private func convertMoveToAlgebraic(_ move: ChessMoveRecord) -> String {
+        // Convert internal move format to algebraic notation
+        // For now, return a basic format - this should be improved based on your move record structure
+        let fromSquare = "\(Character(UnicodeScalar(97 + move.from.col)!))\(8 - move.from.row)"
+        let toSquare = "\(Character(UnicodeScalar(97 + move.to.col)!))\(8 - move.to.row)"
+        return "\(fromSquare)\(toSquare)"
+    }
+
+    func testAPIConnection() async -> Bool {
+        return await chessCoachAPI.testConnection()
     }
 }
 
