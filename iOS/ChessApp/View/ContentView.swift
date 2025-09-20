@@ -73,11 +73,15 @@ struct ContentView: View {
                 Spacer()
                 
                 ChessBoardView(gameState: gameState)
-                
+
                 Spacer()
             }
             .padding()
             .navigationBarHidden(true)
+            .sensoryFeedback(.impact(weight: .heavy), trigger: gameState.captureTrigger)
+            .sensoryFeedback(.success, trigger: gameState.checkmateTrigger)
+            .sensoryFeedback(.error, trigger: gameState.checkTrigger)
+            .sensoryFeedback(.warning, trigger: gameState.stalemateTrigger)
         }
     }
     
@@ -96,6 +100,10 @@ struct ContentView: View {
             }
             .navigationTitle(String(localized: "Chess"))
             .navigationBarTitleDisplayMode(.large)
+            .sensoryFeedback(.impact(weight: .heavy), trigger: gameState.captureTrigger)
+            .sensoryFeedback(.success, trigger: gameState.checkmateTrigger)
+            .sensoryFeedback(.error, trigger: gameState.checkTrigger)
+            .sensoryFeedback(.warning, trigger: gameState.stalemateTrigger)
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }

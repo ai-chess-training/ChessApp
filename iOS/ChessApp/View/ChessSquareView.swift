@@ -27,6 +27,12 @@ struct ChessSquareView: View {
     let piece: ChessPiece?
     let isSelected: Bool
     @Bindable var gameState: ChessGameState
+
+    // MARK: - Haptic Feedback State
+
+    @State private var pieceSelectedTrigger = false
+    @State private var moveSuccessTrigger = false
+    @State private var moveFailTrigger = false
     
     private var squareColor: Color {
         // Priority order: King in check (highest) > Available moves > Base color (lowest)
@@ -85,6 +91,9 @@ struct ChessSquareView: View {
             }
         }
         .buttonStyle(PlainButtonStyle())
+        .sensoryFeedback(.impact(weight: .light), trigger: pieceSelectedTrigger)
+        .sensoryFeedback(.impact(weight: .medium), trigger: moveSuccessTrigger)
+        .sensoryFeedback(.error, trigger: moveFailTrigger)
     }
     
     private func handleSquareTap() {
@@ -114,12 +123,17 @@ struct ChessSquareView: View {
     }
 
     private func selectSquare() {
+        pieceSelectedTrigger.toggle()
         gameState.selectSquare(position)
     }
 
     private func attemptMoveOrDeselect(from selectedSquare: ChessPosition) {
         let moveSuccessful = gameState.attemptMove(from: selectedSquare, to: position)
-        if !moveSuccessful {
+
+        if moveSuccessful {
+            moveSuccessTrigger.toggle()
+        } else {
+            moveFailTrigger.toggle()
             deselectSquare()
         }
     }
