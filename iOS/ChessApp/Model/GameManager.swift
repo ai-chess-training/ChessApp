@@ -62,6 +62,15 @@ class ChessGameState: @unchecked Sendable {
         chessCoachAPI = ChessCoachAPI()
         ruleEngine = ChessRuleEngine()
         gameStartTime = Date()
+
+        // Load default settings
+        if let savedLevel = UserDefaults.standard.string(forKey: "ChessCoach.defaultSkillLevel"),
+           let level = SkillLevel(rawValue: savedLevel) {
+            skillLevel = level
+        }
+
+        isCoachingEnabled = UserDefaults.standard.bool(forKey: "ChessCoach.enabledByDefault")
+
         setupInitialBoard()
     }
     

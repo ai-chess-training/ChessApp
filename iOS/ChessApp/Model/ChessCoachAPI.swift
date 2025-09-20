@@ -131,9 +131,16 @@ class ChessCoachAPI: @unchecked Sendable {
     private(set) var isConnected: Bool = false
     private(set) var lastError: String?
 
-    init(baseURL: String = "http://localhost:8000", apiKey: String? = nil) {
-        self.baseURL = baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-        self.apiKey = apiKey
+    init(baseURL: String? = nil, apiKey: String? = nil) {
+        // Use provided URL or get from settings, fallback to localhost
+        let configuredURL = baseURL ??
+                          UserDefaults.standard.string(forKey: "ChessCoach.apiBaseURL") ??
+                          "http://localhost:8000"
+
+        self.baseURL = configuredURL.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+
+        // Use provided API key or get from settings
+        self.apiKey = apiKey ?? UserDefaults.standard.string(forKey: "ChessCoach.apiKey")
 
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30.0

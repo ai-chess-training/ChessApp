@@ -10,6 +10,7 @@ import SwiftUI
 struct UserProfileView: View {
     @Bindable var authManager: AuthenticationManager
     @State private var showingSignOutAlert = false
+    @State private var showingSettings = false
     
     var body: some View {
         HStack {
@@ -38,7 +39,7 @@ struct UserProfileView: View {
             
             Menu {
                 Button("Settings") {
-                    // Handle settings
+                    showingSettings = true
                 }
                 
                 if authManager.user != nil {
@@ -68,6 +69,9 @@ struct UserProfileView: View {
             }
         } message: {
             Text("Are you sure you want to sign out?")
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
         }
     }
 }

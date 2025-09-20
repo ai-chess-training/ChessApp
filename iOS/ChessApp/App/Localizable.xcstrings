@@ -13,6 +13,15 @@
     "Analyzing move..." : {
 
     },
+    "API Base URL" : {
+
+    },
+    "API Key (Optional)" : {
+
+    },
+    "Are you sure you want to reset all settings to their default values?" : {
+
+    },
     "Are you sure you want to sign out?" : {
 
     },
@@ -142,6 +151,9 @@
     "Chess Coach" : {
 
     },
+    "Chess Coach API" : {
+
+    },
     "ChessApp" : {
 
     },
@@ -169,10 +181,19 @@
         }
       }
     },
+    "Coaching Defaults" : {
+
+    },
     "Concepts" : {
 
     },
+    "Configure the Chess Coach backend server connection. Use localhost for local development or your Mac's IP address for testing on device." : {
+
+    },
     "Connected" : {
+
+    },
+    "Connection Test" : {
 
     },
     "Continue as Guest" : {
@@ -226,6 +247,9 @@
         }
       }
     },
+    "Default Skill Level" : {
+
+    },
     "Detailed Analysis" : {
 
     },
@@ -256,6 +280,12 @@
         }
       }
     },
+    "Enable Coaching by Default" : {
+
+    },
+    "Enter OpenAI API key" : {
+
+    },
     "Game Controls" : {
       "comment" : "Navigation title for game controls section",
       "extractionState" : "manual",
@@ -281,6 +311,15 @@
       }
     },
     "Game One" : {
+
+    },
+    "http://localhost:8000" : {
+
+    },
+    "Local Network" : {
+
+    },
+    "Localhost" : {
 
     },
     "Make a move to receive coaching feedback" : {
@@ -394,6 +433,9 @@
     "Practice Suggestions" : {
 
     },
+    "Quick Presets" : {
+
+    },
     "Reset" : {
       "comment" : "Reset game button text",
       "extractionState" : "manual",
@@ -417,6 +459,12 @@
           }
         }
       }
+    },
+    "Reset Settings" : {
+
+    },
+    "Reset to Defaults" : {
+
     },
     "Resign" : {
       "comment" : "Resign game button text",
@@ -443,6 +491,9 @@
       }
     },
     "Retry" : {
+
+    },
+    "Save" : {
 
     },
     "Settings" : {
@@ -486,6 +537,15 @@
           }
         }
       }
+    },
+    "Test Connection" : {
+
+    },
+    "These settings will be applied to new games automatically." : {
+
+    },
+    "This will reset all Chess Coach settings to their default values." : {
+
     },
     "Undo" : {
       "comment" : "Undo move button text",
