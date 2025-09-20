@@ -27,6 +27,7 @@ struct ChessSquareView: View {
     let piece: ChessPiece?
     let isSelected: Bool
     @Bindable var gameState: ChessGameState
+    let pieceAnimationNamespace: Namespace.ID
 
     // MARK: - Haptic Feedback State
 
@@ -77,15 +78,16 @@ struct ChessSquareView: View {
                 
                 if let piece = piece {
                     GeometryReader { geometry in
-                        let squareSize = geometry.size.width //we know it is a square, only one is needed for width and height
+                        let squareSize = geometry.size.width
                         let customFont = Font.system(size: squareSize * SquareConstants.pieceFontScale)
-                        
+
                         Text(piece.type.symbol(for: piece.color))
                             .font(customFont)
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
                             .frame(width: geometry.size.width, height: geometry.size.height)
                             .shadow(color: .black.opacity(SquareConstants.shadowOpacity), radius: SquareConstants.shadowRadius, x: 0, y: 1)
+                            .matchedGeometryEffect(id: "\(piece.type.rawValue)-\(piece.color.rawValue)-\(position.row)-\(position.col)", in: pieceAnimationNamespace)
                     }
                 }
             }
@@ -140,8 +142,14 @@ struct ChessSquareView: View {
 }
 
 #Preview {
-    ChessSquareView(position: ChessPosition(row: 0, col: 0), piece: ChessGameState().board[0][0],
-                    isSelected: false,
-                    gameState: ChessGameState())
+    @Previewable @Namespace var testNamespace
+
+    return ChessSquareView(
+        position: ChessPosition(row: 0, col: 0),
+        piece: ChessGameState().board[0][0],
+        isSelected: false,
+        gameState: ChessGameState(),
+        pieceAnimationNamespace: testNamespace
+    )
     .frame(width: 150, height: 150)
 }
