@@ -43,7 +43,7 @@ struct UserProfileView: View {
                     showingSettings = true
                 }
                 
-                if authManager.user != nil {
+                if let appuser = authManager.user, !appuser.isGuest  {
                     // Signed in with Google - show Sign Out
                     Button("Sign Out", role: .destructive) {
                         showingSignOutAlert = true
