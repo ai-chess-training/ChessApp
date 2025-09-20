@@ -36,8 +36,6 @@ struct UserProfileView: View {
                 }
             }
             
-            Spacer()
-            
             Menu {
                 Button("Settings") {
                     // Handle settings
