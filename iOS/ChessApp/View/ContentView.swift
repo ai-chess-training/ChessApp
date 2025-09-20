@@ -65,19 +65,15 @@ struct ContentView: View {
             .navigationTitle(String(localized: "Game Controls"))
         } detail: {
             VStack {
-                Text("Chess", bundle: .main, comment: "App name and navigation title")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .padding(.top)
-                
                 Spacer()
-                
+
                 ChessBoardView(gameState: gameState)
 
                 Spacer()
             }
             .padding()
-            .navigationBarHidden(true)
+            .navigationTitle(String(localized: "Chess"))
+            .navigationBarTitleDisplayMode(.large)
             .sensoryFeedback(.impact(weight: .heavy), trigger: gameState.captureTrigger)
             .sensoryFeedback(.success, trigger: gameState.checkmateTrigger)
             .sensoryFeedback(.error, trigger: gameState.checkTrigger)
@@ -87,7 +83,7 @@ struct ContentView: View {
     
     // MARK: - Single Column Layout (iPhone + iPad Portrait)
     private var singleColumnLayout: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack {
                     UserProfileView(authManager: authManager)
@@ -105,7 +101,6 @@ struct ContentView: View {
             .sensoryFeedback(.error, trigger: gameState.checkTrigger)
             .sensoryFeedback(.warning, trigger: gameState.stalemateTrigger)
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
