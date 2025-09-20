@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct SettingsView: View {
+    let gameState: ChessGameState
     @Environment(\.dismiss) private var dismiss
     @State private var apiBaseURL: String = "http://localhost:8000"
     @State private var apiKey: String = ""
     @State private var defaultSkillLevel: SkillLevel = .intermediate
     @State private var enableCoachingByDefault: Bool = false
+    @State private var shouldShowHistory: Bool = false
     @State private var showingResetAlert = false
     @State private var testingConnection = false
     @State private var connectionResult: String?
@@ -88,6 +90,16 @@ struct SettingsView: View {
                     Text("These settings will be applied to new games automatically.")
                 }
 
+                // Developer Settings Section
+                Section {
+                    Toggle("Show Move History", isOn: $shouldShowHistory)
+
+                } header: {
+                    Label("Developer", systemImage: "hammer")
+                } footer: {
+                    Text("Enable debug mode to show move history and additional development information during gameplay.")
+                }
+
                 // Connection Testing Section
                 Section {
                     HStack {
@@ -142,6 +154,7 @@ struct SettingsView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
                         saveSettings()
+                        gameState.refreshSettings()
                         dismiss()
                     }
                     .fontWeight(.semibold)
@@ -151,6 +164,7 @@ struct SettingsView: View {
                 Button("Cancel", role: .cancel) { }
                 Button("Reset", role: .destructive) {
                     resetToDefaults()
+                    gameState.refreshSettings()
                 }
             } message: {
                 Text("Are you sure you want to reset all settings to their default values?")
@@ -173,6 +187,7 @@ struct SettingsView: View {
         }
 
         enableCoachingByDefault = UserDefaults.standard.bool(forKey: "ChessCoach.enabledByDefault")
+        shouldShowHistory = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
     }
 
     private func saveSettings() {
@@ -180,6 +195,7 @@ struct SettingsView: View {
         UserDefaults.standard.set(apiKey.isEmpty ? nil : apiKey, forKey: "ChessCoach.apiKey")
         UserDefaults.standard.set(defaultSkillLevel.rawValue, forKey: "ChessCoach.defaultSkillLevel")
         UserDefaults.standard.set(enableCoachingByDefault, forKey: "ChessCoach.enabledByDefault")
+        UserDefaults.standard.set(shouldShowHistory, forKey: "ChessCoach.shouldShowHistory")
     }
 
     private func resetToDefaults() {
@@ -187,6 +203,7 @@ struct SettingsView: View {
         apiKey = ""
         defaultSkillLevel = .intermediate
         enableCoachingByDefault = false
+        shouldShowHistory = false
         connectionResult = nil
 
         // Clear from UserDefaults
@@ -194,7 +211,8 @@ struct SettingsView: View {
             "ChessCoach.apiBaseURL",
             "ChessCoach.apiKey",
             "ChessCoach.defaultSkillLevel",
-            "ChessCoach.enabledByDefault"
+            "ChessCoach.enabledByDefault",
+            "ChessCoach.shouldShowHistory"
         ]
 
         for key in keys {
@@ -232,13 +250,13 @@ struct SettingsView: View {
                 let addrFamily = interface.ifa_addr.pointee.sa_family
 
                 if addrFamily == UInt8(AF_INET) {
-                    let name = String(cString: interface.ifa_name)
+                    let name = String(validatingCString: interface.ifa_name) ?? ""
                     if name == "en0" || name == "en1" {
                         var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
                         getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
                                    &hostname, socklen_t(hostname.count),
                                    nil, socklen_t(0), NI_NUMERICHOST)
-                        address = String(cString: hostname)
+                        address = String(validating: hostname, as: UTF8.self)
                         break
                     }
                 }
@@ -251,5 +269,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(gameState: ChessGameState())
 }

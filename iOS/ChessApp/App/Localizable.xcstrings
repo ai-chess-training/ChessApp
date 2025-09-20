@@ -253,6 +253,9 @@
     "Detailed Analysis" : {
 
     },
+    "Developer" : {
+
+    },
     "Disconnected" : {
 
     },
@@ -281,6 +284,9 @@
       }
     },
     "Enable Coaching by Default" : {
+
+    },
+    "Enable debug mode to show move history and additional development information during gameplay." : {
 
     },
     "Enter OpenAI API key" : {
@@ -497,6 +503,9 @@
 
     },
     "Settings" : {
+
+    },
+    "Show Move History" : {
 
     },
     "Sign in to save your games and track your progress" : {

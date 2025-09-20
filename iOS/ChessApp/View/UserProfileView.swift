@@ -9,6 +9,7 @@ import SwiftUI
 
 struct UserProfileView: View {
     @Bindable var authManager: AuthenticationManager
+    let gameState: ChessGameState
     @State private var showingSignOutAlert = false
     @State private var showingSettings = false
     
@@ -71,12 +72,12 @@ struct UserProfileView: View {
             Text("Are you sure you want to sign out?")
         }
         .sheet(isPresented: $showingSettings) {
-            SettingsView()
+            SettingsView(gameState: gameState)
         }
     }
 }
 
 #Preview {
-    UserProfileView(authManager: AuthenticationManager())
+    UserProfileView(authManager: AuthenticationManager(), gameState: ChessGameState())
         .padding()
 }

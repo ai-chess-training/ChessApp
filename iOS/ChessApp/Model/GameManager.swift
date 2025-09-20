@@ -70,6 +70,7 @@ class ChessGameState: @unchecked Sendable {
         }
 
         isCoachingEnabled = UserDefaults.standard.bool(forKey: "ChessCoach.enabledByDefault")
+        isDebugMode = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
 
         setupInitialBoard()
     }
@@ -506,6 +507,19 @@ class ChessGameState: @unchecked Sendable {
 
     func testAPIConnection() async -> Bool {
         return await chessCoachAPI.testConnection()
+    }
+
+    // MARK: - Settings Refresh
+
+    func refreshSettings() {
+        // Reload settings from UserDefaults
+        if let savedLevel = UserDefaults.standard.string(forKey: "ChessCoach.defaultSkillLevel"),
+           let level = SkillLevel(rawValue: savedLevel) {
+            skillLevel = level
+        }
+
+        isCoachingEnabled = UserDefaults.standard.bool(forKey: "ChessCoach.enabledByDefault")
+        isDebugMode = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
     }
 }
 

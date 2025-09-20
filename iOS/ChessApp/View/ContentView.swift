@@ -64,7 +64,7 @@ struct ContentView: View {
             .navigationTitle(String(localized: "Game Controls"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    UserProfileView(authManager: authManager)
+                    UserProfileView(authManager: authManager, gameState: gameState)
                 }
             }
         } detail: {
@@ -107,7 +107,7 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    UserProfileView(authManager: authManager)
+                    UserProfileView(authManager: authManager, gameState: gameState)
                 }
             }
             .sensoryFeedback(.impact(weight: .heavy), trigger: gameState.captureTrigger)
