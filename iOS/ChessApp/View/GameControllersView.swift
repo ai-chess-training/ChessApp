@@ -17,44 +17,13 @@ struct GameControlsView: View {
     @State private var resignTrigger = false
     
     var body: some View {
-        VStack(spacing: 15) {
-            HStack(spacing: 20) {
-                Button(String(localized: "Reset", comment: "Reset game button text")) {
-                    resetTrigger.toggle()
-                    gameState.resetGame()
-                }
-                .buttonStyle(.borderedProminent)
-                .sensoryFeedback(.impact(weight: .light), trigger: resetTrigger)
-                
-                Button(String(localized: "Undo", comment: "Undo move button text")) {
-                    undoTrigger.toggle()
-                    let _ = gameState.undoLastMove()
-                }
-                .buttonStyle(.bordered)
-                .disabled(!gameState.canUndo())
-                .sensoryFeedback(.impact(weight: .medium), trigger: undoTrigger)
-                
-                Button(String(localized: "Resign", comment: "Resign game button text")) {
-                    resignTrigger.toggle()
-                    gameState.gameStatus = .checkmate(winner: gameState.currentPlayer == .white ? .black : .white)
-                }
-                .buttonStyle(.bordered)
-                .foregroundColor(.red)
-                .sensoryFeedback(.impact(weight: .heavy), trigger: resignTrigger)
-            }
-            
-            // Debug toggle (small and unobtrusive)
-            HStack {
-                Spacer()
-                Button(action: {
-                    gameState.isDebugMode.toggle()
-                }) {
-                    Text("Debug: \(gameState.isDebugMode ? String(localized: "ON") : String(localized: "OFF"))", bundle: .main, comment: "Debug mode toggle button text. %@ is ON or OFF")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
-            }
+        VStack {
+            GameActionButtonsView(
+                gameState: gameState,
+                resetTrigger: $resetTrigger,
+                undoTrigger: $undoTrigger,
+                resignTrigger: $resignTrigger
+            )
             
             // Move History (Debug Mode Only)
             if gameState.isDebugMode && !gameState.moveHistory.isEmpty {
@@ -96,6 +65,9 @@ struct GameControlsView: View {
         .padding()
         .background(Color(.systemGroupedBackground))
         .cornerRadius(12)
+        
+        // Chess Coach Feedback
+        CoachingFeedbackView(gameState: gameState)
     }
 }
 
@@ -124,6 +96,55 @@ struct CapturedPiecesRow: View {
                 
                 Spacer()
             }
+        }
+    }
+}
+
+// MARK: - Game Action Buttons Component
+struct GameActionButtonsView: View {
+    @Bindable var gameState: ChessGameState
+    @Binding var resetTrigger: Bool
+    @Binding var undoTrigger: Bool
+    @Binding var resignTrigger: Bool
+
+    @State private var showingUndoAlert = false
+
+    var body: some View {
+        HStack(spacing: 20) {
+            Button(String(localized: "Reset", comment: "Reset game button text")) {
+                resetTrigger.toggle()
+                gameState.resetGame()
+            }
+            .buttonStyle(.borderedProminent)
+            .sensoryFeedback(.impact(weight: .light), trigger: resetTrigger)
+
+            Button(String(localized: "Undo", comment: "Undo move button text")) {
+                showingUndoAlert = true
+            }
+            .buttonStyle(.bordered)
+            .disabled(!gameState.canUndo())
+            .alert("Confirm Undo", isPresented: $showingUndoAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Undo Move", role: .destructive) {
+                    undoTrigger.toggle()
+                    let _ = gameState.undoLastMove()
+                }
+            } message: {
+                if gameState.isCoachingEnabled {
+                    Text("Undoing a move will disable coaching because the game state will be out of sync with the server.")
+                } else {
+                    Text("Are you sure you want to undo the last move?")
+                }
+            }
+            .sensoryFeedback(.impact(weight: .medium), trigger: undoTrigger)
+
+            Button(String(localized: "Resign", comment: "Resign game button text")) {
+                resignTrigger.toggle()
+                gameState.gameStatus = .checkmate(winner: gameState.currentPlayer == .white ? .black : .white)
+            }
+            .buttonStyle(.bordered)
+            .foregroundColor(.red)
+            .sensoryFeedback(.impact(weight: .heavy), trigger: resignTrigger)
         }
     }
 }

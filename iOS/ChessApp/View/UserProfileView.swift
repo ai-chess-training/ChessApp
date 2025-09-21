@@ -9,7 +9,9 @@ import SwiftUI
 
 struct UserProfileView: View {
     @Bindable var authManager: AuthenticationManager
+    let gameState: ChessGameState
     @State private var showingSignOutAlert = false
+    @State private var showingSettings = false
     
     var body: some View {
         HStack {
@@ -38,10 +40,10 @@ struct UserProfileView: View {
             
             Menu {
                 Button("Settings") {
-                    // Handle settings
+                    showingSettings = true
                 }
                 
-                if authManager.user != nil {
+                if let appuser = authManager.user, !appuser.isGuest  {
                     // Signed in with Google - show Sign Out
                     Button("Sign Out", role: .destructive) {
                         showingSignOutAlert = true
@@ -69,10 +71,13 @@ struct UserProfileView: View {
         } message: {
             Text("Are you sure you want to sign out?")
         }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView(gameState: gameState)
+        }
     }
 }
 
 #Preview {
-    UserProfileView(authManager: AuthenticationManager())
+    UserProfileView(authManager: AuthenticationManager(), gameState: ChessGameState())
         .padding()
 }

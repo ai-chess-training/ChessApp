@@ -9,7 +9,7 @@ import Observation
 import Foundation
 
 @Observable
-class ChessGameState {
+class ChessGameState: @unchecked Sendable {
     var selectedSquare: ChessPosition?
     var board: [[ChessPiece?]] = Array(repeating: Array(repeating: nil, count: 8), count: 8)
     var currentPlayer: ChessColor = .white
@@ -24,6 +24,15 @@ class ChessGameState {
     var checkmateTrigger = false
     var checkTrigger = false
     var stalemateTrigger = false
+
+    // MARK: - Chess Coach API Integration
+
+    var chessCoachAPI: ChessCoachAPI
+    var isCoachingEnabled: Bool = false
+    var currentMoveFeedback: MoveFeedback?
+    var isAnalyzingMove: Bool = false
+    var skillLevel: SkillLevel = .intermediate
+    var coachingDisabledByUndo: Bool = false
     
     // Chess rules engine and move history
     var ruleEngine: ChessRuleEngine?
@@ -51,8 +60,19 @@ class ChessGameState {
     var gameStartTime: Date?
     
     init() {
+        chessCoachAPI = ChessCoachAPI()
         ruleEngine = ChessRuleEngine()
         gameStartTime = Date()
+
+        // Load default settings
+        if let savedLevel = UserDefaults.standard.string(forKey: "ChessCoach.defaultSkillLevel"),
+           let level = SkillLevel(rawValue: savedLevel) {
+            skillLevel = level
+        }
+
+        isCoachingEnabled = UserDefaults.standard.bool(forKey: "ChessCoach.enabledByDefault")
+        isDebugMode = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
+
         setupInitialBoard()
     }
     
@@ -76,7 +96,14 @@ class ChessGameState {
         blackKingPosition = ChessPosition(row: 0, col: 4)
         gameStartTime = Date()
         moveHistoryManager.clear()
+        currentMoveFeedback = nil
+        isAnalyzingMove = false
         setupInitialBoard()
+
+        // Always start new coaching session for fresh game
+        Task {
+            await startNewCoachingSession()
+        }
     }
     
     private func setupInitialBoard() {
@@ -211,13 +238,23 @@ class ChessGameState {
         
         // Update game state
         selectedSquare = nil
-        
+
+        // Capture the moving player before switching
+        let movingPlayer = currentPlayer
+
         // Switch players
         currentPlayer = currentPlayer == .white ? .black : .white
-        
+
+        // Analyze the move if coaching is enabled
+        if isCoachingEnabled {
+            Task {
+                await analyzeLastMove(for: movingPlayer)
+            }
+        }
+
         // Check for game ending conditions
         updateGameStatus()
-        
+
         return true
     }
     
@@ -290,6 +327,8 @@ class ChessGameState {
         guard let lastMove = moveHistoryManager.undoLastMove() else {
             return false
         }
+
+        print("⏪ Undo detected - will disable coaching (game state out of sync)")
         
         // Restore the piece to its original position
         let finalPiece: ChessPiece
@@ -352,7 +391,14 @@ class ChessGameState {
         
         // Clear selection
         selectedSquare = nil
-        
+
+        // Disable coaching if it was enabled (game state is now out of sync with server)
+        if isCoachingEnabled {
+            disableCoaching()
+            coachingDisabledByUndo = true
+            print("🔕 Coaching disabled due to undo operation")
+        }
+
         return true
     }
     
@@ -404,6 +450,154 @@ class ChessGameState {
         showingPawnPromotion = false
         promotionMove = nil
         selectedSquare = nil
+    }
+
+    // MARK: - Chess Coach Integration
+
+    func enableCoaching(skillLevel: SkillLevel = .intermediate) {
+        print("🚨 ENABLE COACHING CALLED - THIS SHOULD SHOW UP!")
+        print("🎯 enableCoaching called with skill level: \(skillLevel.displayName)")
+        self.skillLevel = skillLevel
+        isCoachingEnabled = true
+        coachingDisabledByUndo = false
+        print("🎯 isCoachingEnabled set to: \(isCoachingEnabled)")
+
+        // Create session if we don't have one
+        if chessCoachAPI.currentSessionId == nil {
+            print("🎯 No active session, creating one...")
+            Task {
+                await startNewCoachingSession()
+            }
+        } else {
+            print("🎯 Using existing session: \(chessCoachAPI.currentSessionId!)")
+        }
+    }
+
+    func disableCoaching() {
+        isCoachingEnabled = false
+        currentMoveFeedback = nil
+    }
+
+    @MainActor
+    private func startNewCoachingSession() async {
+        print("🎮 Starting new coaching session...")
+
+        do {
+            let sessionResponse = try await chessCoachAPI.startNewGame(skillLevel: skillLevel)
+            print("✅ Started new coaching session:")
+            print("   Session ID: \(sessionResponse.sessionId)")
+            print("   Skill level: \(skillLevel.displayName)")
+            print("   Starting position: \(sessionResponse.fenStart)")
+        } catch {
+            print("❌ Failed to start coaching session: \(error)")
+            print("   Error type: \(type(of: error))")
+            print("   Error description: \(error.localizedDescription)")
+        }
+    }
+
+    func analyzeLastMove(for movingPlayer: ChessColor) async {
+        print("🔍 analyzeLastMove called for: \(movingPlayer == .white ? "White" : "Black")")
+
+        guard isCoachingEnabled else {
+            print("❌ Coaching not enabled")
+            return
+        }
+
+        guard let lastMoveRecord = moveHistoryManager.getLastMove() else {
+            print("❌ No last move record found")
+            return
+        }
+
+        guard !isAnalyzingMove else {
+            print("❌ Already analyzing a move")
+            return
+        }
+
+        print("✅ All guards passed, starting analysis for \(movingPlayer == .white ? "White" : "Black")")
+
+        await MainActor.run {
+            isAnalyzingMove = true
+        }
+
+        do {
+            // Convert move to algebraic notation
+            let moveString = convertMoveToAlgebraic(lastMoveRecord, movingPlayer: movingPlayer)
+            print("🎯 Analyzing move: \(moveString)")
+            print("🎯 Session ID: \(chessCoachAPI.currentSessionId ?? "NONE")")
+            print("🎯 iOS move count: \(moveCount)")
+            print("🎯 iOS current player: \(currentPlayer)")
+
+            let analysis = try await chessCoachAPI.analyzeCurrentMove(moveString)
+
+            await MainActor.run {
+                currentMoveFeedback = analysis.humanFeedback
+                isAnalyzingMove = false
+            }
+
+            print("✅ Move analysis complete: \(analysis.humanFeedback?.basic ?? "No feedback")")
+
+        } catch {
+            await MainActor.run {
+                isAnalyzingMove = false
+            }
+            print("❌ Failed to analyze move: \(error)")
+            print("   Error type: \(type(of: error))")
+            print("   Error description: \(error.localizedDescription)")
+
+            // If it's an API error, let's see the details
+            if let apiError = error as? APIError {
+                print("   API Error details: \(apiError.localizedDescription)")
+            }
+
+            // Check for specific error types
+            if let urlError = error as? URLError {
+                print("   URL Error code: \(urlError.code)")
+                print("   URL Error description: \(urlError.localizedDescription)")
+            }
+
+            if let decodingError = error as? DecodingError {
+                print("   JSON Decoding Error: \(decodingError)")
+            }
+        }
+    }
+
+    private func convertMoveToAlgebraic(_ move: ChessMoveRecord, movingPlayer: ChessColor) -> String {
+        // Convert internal move format to UCI notation
+        // Your board setup: Row 0 = rank 8, Row 1 = rank 7, Row 6 = rank 2, Row 7 = rank 1
+        // Col 0 = file a, Col 7 = file h
+
+        let fromFile = Character(UnicodeScalar(97 + move.from.col)!) // a-h
+        let fromRank = 8 - move.from.row // Convert: Row 0->8, Row 1->7, Row 6->2, Row 7->1
+        let toFile = Character(UnicodeScalar(97 + move.to.col)!) // a-h
+        let toRank = 8 - move.to.row
+
+        let fromSquare = "\(fromFile)\(fromRank)"
+        let toSquare = "\(toFile)\(toRank)"
+
+        // Debug: Show the piece that moved (from move record)
+        let pieceInfo = "\(move.piece.color) \(move.piece.type)"
+
+        print("🔍 Move conversion: (\(move.from.row),\(move.from.col)) -> (\(move.to.row),\(move.to.col)) = \(fromSquare)\(toSquare)")
+        print("🔍 Piece moved: \(pieceInfo), Moving player: \(movingPlayer)")
+
+        return "\(fromSquare)\(toSquare)"
+    }
+
+    func testAPIConnection() async -> Bool {
+        return await chessCoachAPI.testConnection()
+    }
+
+    // MARK: - Settings Refresh
+
+    func refreshSettings() {
+        // Reload settings from UserDefaults
+        if let savedLevel = UserDefaults.standard.string(forKey: "ChessCoach.defaultSkillLevel"),
+           let level = SkillLevel(rawValue: savedLevel) {
+            skillLevel = level
+        }
+
+        isCoachingEnabled = UserDefaults.standard.bool(forKey: "ChessCoach.enabledByDefault")
+        isDebugMode = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
     }
 }
 

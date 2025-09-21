@@ -1,10 +1,40 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "%@:" : {
 
     },
+    "•" : {
+
+    },
+    "Analyzing move..." : {
+
+    },
+    "Analyzing Move..." : {
+
+    },
+    "API Base URL" : {
+
+    },
+    "API Key (Optional)" : {
+
+    },
+    "Are you sure you want to reset all settings to their default values?" : {
+
+    },
     "Are you sure you want to sign out?" : {
+
+    },
+    "Are you sure you want to undo the last move?" : {
+
+    },
+    "Best line: %@" : {
+
+    },
+    "Better: %@" : {
 
     },
     "Cancel" : {
@@ -127,6 +157,15 @@
         }
       }
     },
+    "Chess Coach" : {
+
+    },
+    "Chess Coach API" : {
+
+    },
+    "Chess Coach is reviewing your move" : {
+
+    },
     "ChessApp" : {
 
     },
@@ -153,6 +192,27 @@
           }
         }
       }
+    },
+    "Coaching Defaults" : {
+
+    },
+    "Coaching disabled" : {
+
+    },
+    "Concepts" : {
+
+    },
+    "Configure the Chess Coach backend server connection. Use localhost for local development or your Mac's IP address for testing on device." : {
+
+    },
+    "Confirm Undo" : {
+
+    },
+    "Connected" : {
+
+    },
+    "Connection Test" : {
+
     },
     "Continue as Guest" : {
 
@@ -205,6 +265,18 @@
         }
       }
     },
+    "Default Skill Level" : {
+
+    },
+    "Detailed Analysis" : {
+
+    },
+    "Developer" : {
+
+    },
+    "Disconnected" : {
+
+    },
     "Draw!" : {
       "comment" : "Alert message when game ends in draw",
       "extractionState" : "manual",
@@ -228,6 +300,15 @@
           }
         }
       }
+    },
+    "Enable Coaching by Default" : {
+
+    },
+    "Enable debug mode to show move history and additional development information during gameplay." : {
+
+    },
+    "Enter OpenAI API key" : {
+
     },
     "Game Controls" : {
       "comment" : "Navigation title for game controls section",
@@ -254,6 +335,24 @@
       }
     },
     "Game One" : {
+
+    },
+    "Game state is out of sync due to undo operation. Toggle coaching off and on again to resume." : {
+
+    },
+    "http://localhost:8000" : {
+
+    },
+    "Local Network" : {
+
+    },
+    "Localhost" : {
+
+    },
+    "Make a move to receive coaching feedback" : {
+
+    },
+    "Move %lld" : {
 
     },
     "Move History (Debug)" : {
@@ -358,6 +457,12 @@
     "Play chess with friends around the world" : {
 
     },
+    "Practice Suggestions" : {
+
+    },
+    "Quick Presets" : {
+
+    },
     "Reset" : {
       "comment" : "Reset game button text",
       "extractionState" : "manual",
@@ -381,6 +486,12 @@
           }
         }
       }
+    },
+    "Reset Settings" : {
+
+    },
+    "Reset to Defaults" : {
+
     },
     "Resign" : {
       "comment" : "Resign game button text",
@@ -406,7 +517,16 @@
         }
       }
     },
+    "Retry" : {
+
+    },
+    "Save" : {
+
+    },
     "Settings" : {
+
+    },
+    "Show Move History" : {
 
     },
     "Sign in to save your games and track your progress" : {
@@ -419,6 +539,9 @@
 
     },
     "Sign Out" : {
+
+    },
+    "Skill Level" : {
 
     },
     "Stalemate!" : {
@@ -445,6 +568,15 @@
         }
       }
     },
+    "Test Connection" : {
+
+    },
+    "These settings will be applied to new games automatically." : {
+
+    },
+    "This will reset all Chess Coach settings to their default values." : {
+
+    },
     "Undo" : {
       "comment" : "Undo move button text",
       "extractionState" : "manual",
@@ -468,6 +600,12 @@
           }
         }
       }
+    },
+    "Undo Move" : {
+
+    },
+    "Undoing a move will disable coaching because the game state will be out of sync with the server." : {
+
     }
   },
   "version" : "1.0"
