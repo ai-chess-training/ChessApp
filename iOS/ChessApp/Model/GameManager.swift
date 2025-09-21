@@ -99,11 +99,9 @@ class ChessGameState: @unchecked Sendable {
         isAnalyzingMove = false
         setupInitialBoard()
 
-        // Start new coaching session if enabled
-        if isCoachingEnabled {
-            Task {
-                await startNewCoachingSession()
-            }
+        // Always start new coaching session for fresh game
+        Task {
+            await startNewCoachingSession()
         }
     }
     
@@ -239,19 +237,22 @@ class ChessGameState: @unchecked Sendable {
         
         // Update game state
         selectedSquare = nil
-        
+
+        // Capture the moving player before switching
+        let movingPlayer = currentPlayer
+
         // Switch players
         currentPlayer = currentPlayer == .white ? .black : .white
-        
-        // Check for game ending conditions
-        updateGameStatus()
 
         // Analyze the move if coaching is enabled
         if isCoachingEnabled {
             Task {
-                await analyzeLastMove()
+                await analyzeLastMove(for: movingPlayer)
             }
         }
+
+        // Check for game ending conditions
+        updateGameStatus()
 
         return true
     }
@@ -444,10 +445,20 @@ class ChessGameState: @unchecked Sendable {
     // MARK: - Chess Coach Integration
 
     func enableCoaching(skillLevel: SkillLevel = .intermediate) {
+        print("🚨 ENABLE COACHING CALLED - THIS SHOULD SHOW UP!")
+        print("🎯 enableCoaching called with skill level: \(skillLevel.displayName)")
         self.skillLevel = skillLevel
         isCoachingEnabled = true
-        Task {
-            await startNewCoachingSession()
+        print("🎯 isCoachingEnabled set to: \(isCoachingEnabled)")
+
+        // Create session if we don't have one
+        if chessCoachAPI.currentSessionId == nil {
+            print("🎯 No active session, creating one...")
+            Task {
+                await startNewCoachingSession()
+            }
+        } else {
+            print("🎯 Using existing session: \(chessCoachAPI.currentSessionId!)")
         }
     }
 
@@ -458,17 +469,22 @@ class ChessGameState: @unchecked Sendable {
 
     @MainActor
     private func startNewCoachingSession() async {
-        guard isCoachingEnabled else { return }
+        print("🎮 Starting new coaching session...")
 
         do {
-            let _ = try await chessCoachAPI.startNewGame(skillLevel: skillLevel)
-            print("Started new coaching session with skill level: \(skillLevel.displayName)")
+            let sessionResponse = try await chessCoachAPI.startNewGame(skillLevel: skillLevel)
+            print("✅ Started new coaching session:")
+            print("   Session ID: \(sessionResponse.sessionId)")
+            print("   Skill level: \(skillLevel.displayName)")
+            print("   Starting position: \(sessionResponse.fenStart)")
         } catch {
-            print("Failed to start coaching session: \(error.localizedDescription)")
+            print("❌ Failed to start coaching session: \(error)")
+            print("   Error type: \(type(of: error))")
+            print("   Error description: \(error.localizedDescription)")
         }
     }
 
-    func analyzeLastMove() async {
+    func analyzeLastMove(for movingPlayer: ChessColor) async {
         guard isCoachingEnabled,
               let lastMoveRecord = moveHistoryManager.getLastMove(),
               !isAnalyzingMove else { return }
@@ -479,7 +495,10 @@ class ChessGameState: @unchecked Sendable {
 
         do {
             // Convert move to algebraic notation
-            let moveString = convertMoveToAlgebraic(lastMoveRecord)
+            let moveString = convertMoveToAlgebraic(lastMoveRecord, movingPlayer: movingPlayer)
+            print("🎯 Analyzing move: \(moveString)")
+            print("🎯 Session ID: \(chessCoachAPI.currentSessionId ?? "NONE")")
+
             let analysis = try await chessCoachAPI.analyzeCurrentMove(moveString)
 
             await MainActor.run {
@@ -487,21 +506,52 @@ class ChessGameState: @unchecked Sendable {
                 isAnalyzingMove = false
             }
 
-            print("Move analysis complete: \(analysis.humanFeedback?.basic ?? "No feedback")")
+            print("✅ Move analysis complete: \(analysis.humanFeedback?.basic ?? "No feedback")")
 
         } catch {
             await MainActor.run {
                 isAnalyzingMove = false
             }
-            print("Failed to analyze move: \(error.localizedDescription)")
+            print("❌ Failed to analyze move: \(error)")
+            print("   Error type: \(type(of: error))")
+            print("   Error description: \(error.localizedDescription)")
+
+            // If it's an API error, let's see the details
+            if let apiError = error as? APIError {
+                print("   API Error details: \(apiError.localizedDescription)")
+            }
+
+            // Check for specific error types
+            if let urlError = error as? URLError {
+                print("   URL Error code: \(urlError.code)")
+                print("   URL Error description: \(urlError.localizedDescription)")
+            }
+
+            if let decodingError = error as? DecodingError {
+                print("   JSON Decoding Error: \(decodingError)")
+            }
         }
     }
 
-    private func convertMoveToAlgebraic(_ move: ChessMoveRecord) -> String {
-        // Convert internal move format to algebraic notation
-        // For now, return a basic format - this should be improved based on your move record structure
-        let fromSquare = "\(Character(UnicodeScalar(97 + move.from.col)!))\(8 - move.from.row)"
-        let toSquare = "\(Character(UnicodeScalar(97 + move.to.col)!))\(8 - move.to.row)"
+    private func convertMoveToAlgebraic(_ move: ChessMoveRecord, movingPlayer: ChessColor) -> String {
+        // Convert internal move format to UCI notation
+        // Your board setup: Row 0 = rank 8, Row 1 = rank 7, Row 6 = rank 2, Row 7 = rank 1
+        // Col 0 = file a, Col 7 = file h
+
+        let fromFile = Character(UnicodeScalar(97 + move.from.col)!) // a-h
+        let fromRank = 8 - move.from.row // Convert: Row 0->8, Row 1->7, Row 6->2, Row 7->1
+        let toFile = Character(UnicodeScalar(97 + move.to.col)!) // a-h
+        let toRank = 8 - move.to.row
+
+        let fromSquare = "\(fromFile)\(fromRank)"
+        let toSquare = "\(toFile)\(toRank)"
+
+        // Debug: Show the piece that moved (from move record)
+        let pieceInfo = "\(move.piece.color) \(move.piece.type)"
+
+        print("🔍 Move conversion: (\(move.from.row),\(move.from.col)) -> (\(move.to.row),\(move.to.col)) = \(fromSquare)\(toSquare)")
+        print("🔍 Piece moved: \(pieceInfo), Moving player: \(movingPlayer)")
+
         return "\(fromSquare)\(toSquare)"
     }
 

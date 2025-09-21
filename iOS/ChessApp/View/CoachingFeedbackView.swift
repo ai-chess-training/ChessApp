@@ -260,7 +260,7 @@ struct TagsView: View {
 }
 
 struct DrillsView: View {
-    let drills: [String]
+    let drills: [DrillExercise]
     @State private var isExpanded = false
 
     var body: some View {
@@ -281,13 +281,25 @@ struct DrillsView: View {
             }
 
             if isExpanded {
-                ForEach(drills, id: \.self) { drill in
-                    HStack(alignment: .top) {
-                        Text("•")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text(drill)
-                            .font(.caption)
+                ForEach(drills.indices, id: \.self) { index in
+                    let drill = drills[index]
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(alignment: .top) {
+                            Text("•")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(drill.objective)
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+
+                                if !drill.bestLineSan.isEmpty {
+                                    Text("Best line: \(drill.bestLineSan.joined(separator: " "))")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
                     }
                 }
                 .animation(.easeInOut, value: isExpanded)
@@ -316,7 +328,15 @@ struct DrillsView: View {
                 basic: "Excellent opening move! You control the center and develop quickly.",
                 extended: "The King's Pawn opening is one of the most popular and strong openings in chess. By playing e4, you immediately control the central squares d5 and f5, and you open lines for your bishop and queen.",
                 tags: ["opening", "center control", "development"],
-                drills: ["Practice more King's Pawn openings", "Study center control principles"]
+                drills: [
+                    DrillExercise(
+                        fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                        sideToMove: "white",
+                        objective: "Practice more King's Pawn openings",
+                        bestLineSan: ["e4", "e5"],
+                        altTrapsSan: nil
+                    )
+                ]
             )
             return state
         }())

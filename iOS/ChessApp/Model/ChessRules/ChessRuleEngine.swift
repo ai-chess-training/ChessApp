@@ -116,14 +116,10 @@ class ChessRuleEngine {
               let piece = gameState.board[position.row][position.col],
               piece.color == gameState.currentPlayer,
               let validator = validators[piece.type] else {
-            print("Failed to get piece or validator at position (\(position.row), \(position.col))")
             return []
         }
         
-        print("Getting moves for \(piece.color) \(piece.type) at (\(position.row), \(position.col))")
-        
         let potentialMoves = validator.getLegalMoves(for: position, board: gameState.board, gameState: gameState)
-        print("Potential moves: \(potentialMoves.count)")
         
         // Filter out moves that would leave king in check
         let filteredMoves = potentialMoves.filter { to in
@@ -136,7 +132,6 @@ class ChessRuleEngine {
             return !wouldLeaveInCheck
         }
         
-        print("Final available moves: \(filteredMoves.count)")
         return filteredMoves
     }
     

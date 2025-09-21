@@ -46,7 +46,7 @@ struct MoveFeedback: Codable {
     let basic: String?
     let extended: String?
     let tags: [String]
-    let drills: [String]
+    let drills: [DrillExercise]
 
     enum CodingKeys: String, CodingKey {
         case moveNo = "move_no"
@@ -59,6 +59,22 @@ struct MoveFeedback: Codable {
         case severity
         case bestMoveSan = "best_move_san"
         case basic, extended, tags, drills
+    }
+}
+
+struct DrillExercise: Codable {
+    let fen: String
+    let sideToMove: String
+    let objective: String
+    let bestLineSan: [String]
+    let altTrapsSan: [String]?
+
+    enum CodingKeys: String, CodingKey {
+        case fen
+        case sideToMove = "side_to_move"
+        case objective
+        case bestLineSan = "best_line_san"
+        case altTrapsSan = "alt_traps_san"
     }
 }
 
@@ -150,7 +166,7 @@ class ChessCoachAPI: @unchecked Sendable {
 
     // MARK: - Session Management
 
-    func createSession(skillLevel: SkillLevel = .intermediate, gameMode: String = "play") async throws -> SessionResponse {
+    func createSession(skillLevel: SkillLevel = .intermediate, gameMode: String = "training") async throws -> SessionResponse {
         var components = URLComponents(string: "\(baseURL)/v1/sessions")!
         components.queryItems = [
             URLQueryItem(name: "skill_level", value: skillLevel.rawValue),
@@ -161,15 +177,24 @@ class ChessCoachAPI: @unchecked Sendable {
         request.httpMethod = "POST"
         addAuthHeader(to: &request)
 
-        let (data, response) = try await session.data(for: request)
-        try validateResponse(response)
+        do {
+            let (data, response) = try await session.data(for: request)
+            try validateResponse(response)
 
-        let sessionResponse = try JSONDecoder().decode(SessionResponse.self, from: data)
-        currentSessionId = sessionResponse.sessionId
-        isConnected = true
-        lastError = nil
+            let sessionResponse = try JSONDecoder().decode(SessionResponse.self, from: data)
+            currentSessionId = sessionResponse.sessionId
+            isConnected = true
+            lastError = nil
 
-        return sessionResponse
+            return sessionResponse
+        } catch {
+            isConnected = false
+            lastError = error.localizedDescription
+            print("🚨 Session creation failed:")
+            print("   URL: \(components.url?.absoluteString ?? "invalid")")
+            print("   Error: \(error)")
+            throw error
+        }
     }
 
     func getSession(sessionId: String) async throws -> SessionSnapshot {
@@ -194,6 +219,21 @@ class ChessCoachAPI: @unchecked Sendable {
         addAuthHeader(to: &request)
 
         let (data, response) = try await session.data(for: request)
+
+        // Special handling for 400 errors to get the actual error message
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 400 {
+            if let errorMessage = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let detail = errorMessage["detail"] as? String {
+                print("🚨 API Error 400: \(detail)")
+                throw APIError.badRequest
+            }
+        }
+
+        // Debug: Print successful responses
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+            print("✅ API Success 200: Move analysis received")
+        }
+
         try validateResponse(response)
 
         let analysisResponse = try JSONDecoder().decode(MoveAnalysisResponse.self, from: data)
@@ -217,8 +257,14 @@ class ChessCoachAPI: @unchecked Sendable {
     }
 
     func startNewGame(skillLevel: SkillLevel = .intermediate) async throws -> SessionResponse {
+        print("🔄 Starting new game, clearing session...")
         currentSessionId = nil
-        return try await createSession(skillLevel: skillLevel)
+
+        print("📡 Creating new session...")
+        let sessionResponse = try await createSession(skillLevel: skillLevel)
+
+        print("✅ Session created successfully: \(sessionResponse.sessionId)")
+        return sessionResponse
     }
 
     // MARK: - Helper Methods
