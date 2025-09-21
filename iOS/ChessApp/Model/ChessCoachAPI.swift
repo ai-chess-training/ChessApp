@@ -256,14 +256,15 @@ class ChessCoachAPI: @unchecked Sendable {
         return try await analyzeMove(sessionId: sessionId, move: move)
     }
 
-    func startNewGame(skillLevel: SkillLevel = .intermediate) async throws -> SessionResponse {
+    func startNewGame(skillLevel: SkillLevel = .intermediate, gameMode: String = "training") async throws -> SessionResponse {
         print("🔄 Starting new game, clearing session...")
         currentSessionId = nil
 
         print("📡 Creating new session...")
-        let sessionResponse = try await createSession(skillLevel: skillLevel)
+        let sessionResponse = try await createSession(skillLevel: skillLevel, gameMode: gameMode)
 
         print("✅ Session created successfully: \(sessionResponse.sessionId)")
+        print("   Game mode: \(gameMode)")
         return sessionResponse
     }
 

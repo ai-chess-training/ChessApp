@@ -13,9 +13,6 @@
     "Analyzing move..." : {
 
     },
-    "Analyzing Move..." : {
-
-    },
     "API Base URL" : {
 
     },
@@ -84,6 +81,12 @@
           }
         }
       }
+    },
+    "Change Skill Level?" : {
+
+    },
+    "Changing to %@ requires resetting the game because a new coaching session will be created. This will start a fresh game at the new difficulty level." : {
+
     },
     "Check!" : {
       "comment" : "Alert message when king is in check",
@@ -163,9 +166,6 @@
     "Chess Coach API" : {
 
     },
-    "Chess Coach is reviewing your move" : {
-
-    },
     "ChessApp" : {
 
     },
@@ -215,6 +215,9 @@
 
     },
     "Continue as Guest" : {
+
+    },
+    "Creating session..." : {
 
     },
     "Current Player:" : {
@@ -333,6 +336,9 @@
           }
         }
       }
+    },
+    "Game Mode" : {
+
     },
     "Game One" : {
 
@@ -487,6 +493,12 @@
         }
       }
     },
+    "Reset & Change" : {
+
+    },
+    "Reset & Switch" : {
+
+    },
     "Reset Settings" : {
 
     },
@@ -542,6 +554,9 @@
 
     },
     "Skill Level" : {
+
+    },
+    "Skill: %@" : {
 
     },
     "Stalemate!" : {
