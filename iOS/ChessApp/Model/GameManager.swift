@@ -496,9 +496,24 @@ class ChessGameState: @unchecked Sendable {
     }
 
     func analyzeLastMove(for movingPlayer: ChessColor) async {
-        guard isCoachingEnabled,
-              let lastMoveRecord = moveHistoryManager.getLastMove(),
-              !isAnalyzingMove else { return }
+        print("🔍 analyzeLastMove called for: \(movingPlayer == .white ? "White" : "Black")")
+
+        guard isCoachingEnabled else {
+            print("❌ Coaching not enabled")
+            return
+        }
+
+        guard let lastMoveRecord = moveHistoryManager.getLastMove() else {
+            print("❌ No last move record found")
+            return
+        }
+
+        guard !isAnalyzingMove else {
+            print("❌ Already analyzing a move")
+            return
+        }
+
+        print("✅ All guards passed, starting analysis for \(movingPlayer == .white ? "White" : "Black")")
 
         await MainActor.run {
             isAnalyzingMove = true
