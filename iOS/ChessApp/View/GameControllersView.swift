@@ -167,15 +167,8 @@ struct GameModeSelectionView: View {
 
             Picker("Game Mode", selection: $gameState.gameMode) {
                 ForEach(GameMode.allCases, id: \.self) { mode in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(mode.displayName)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        Text(mode.description)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                    .tag(mode)
+                    Text(mode.displayName)
+                        .tag(mode)
                 }
             }
             .pickerStyle(SegmentedPickerStyle())
