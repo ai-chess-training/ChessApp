@@ -156,6 +156,8 @@ struct GameActionButtonsView: View {
 
 struct GameModeSelectionView: View {
     @Bindable var gameState: ChessGameState
+    @State private var showingModeChangeAlert = false
+    @State private var pendingGameMode: GameMode?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -177,8 +179,8 @@ struct GameModeSelectionView: View {
                 }
             }
             .pickerStyle(SegmentedPickerStyle())
-            .onChange(of: gameState.gameMode) { _, newMode in
-                handleGameModeChange(newMode)
+            .onChange(of: gameState.gameMode) { oldMode, newMode in
+                handleGameModeChange(from: oldMode, to: newMode)
             }
 
             // Current mode indicator
@@ -199,15 +201,64 @@ struct GameModeSelectionView: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
-    }
-
-    private func handleGameModeChange(_ newMode: GameMode) {
-        print("🎮 Game mode changed to: \(newMode.displayName)")
-
-        // Reset coaching session if it was enabled to use new game mode
-        if gameState.isCoachingEnabled {
-            gameState.disableCoaching()
-            gameState.enableCoaching(skillLevel: gameState.skillLevel)
+        .alert(alertTitle, isPresented: $showingModeChangeAlert) {
+            Button("Cancel", role: .cancel) {
+                // Revert to previous mode
+                if let oldMode = pendingGameMode {
+                    gameState.gameMode = oldMode == .humanVsMachine ? .humanVsHuman : .humanVsMachine
+                }
+                pendingGameMode = nil
+            }
+            Button("Reset & Switch", role: .destructive) {
+                confirmModeChange()
+            }
+        } message: {
+            Text(alertMessage)
         }
     }
+
+    private func handleGameModeChange(from oldMode: GameMode, to newMode: GameMode) {
+        // Check if switching modes with game in progress
+        if oldMode != newMode && gameState.moveCount > 0 {
+            print("⚠️ Switching game modes with game in progress - showing warning")
+            pendingGameMode = oldMode
+            showingModeChangeAlert = true
+            return
+        }
+
+        // Normal mode change (no game in progress)
+        gameState.updateGameMode(newMode)
+    }
+
+    private func confirmModeChange() {
+        print("🔄 User confirmed mode change - resetting game and switching mode")
+
+        // Reset the game first
+        gameState.resetGame()
+
+        // Then update the mode to the intended new mode
+        let targetMode: GameMode = pendingGameMode == .humanVsHuman ? .humanVsMachine : .humanVsHuman
+        gameState.updateGameMode(targetMode)
+
+        pendingGameMode = nil
+    }
+
+    // MARK: - Alert Content
+
+    private var alertTitle: String {
+        guard let oldMode = pendingGameMode else { return "Switch Game Mode?" }
+        let newMode: GameMode = oldMode == .humanVsHuman ? .humanVsMachine : .humanVsHuman
+        return "Switch to \(newMode.displayName)?"
+    }
+
+    private var alertMessage: String {
+        guard let oldMode = pendingGameMode else { return "This will reset the current game." }
+
+        if oldMode == .humanVsHuman {
+            return "Switching to Human vs Machine mode requires resetting the game because the current moves are not synced with the AI server. This will start a fresh game against the computer."
+        } else {
+            return "Switching to Human vs Human mode will reset the current game against the computer. This will start a fresh game for two human players."
+        }
+    }
+
 }

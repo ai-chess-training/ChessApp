@@ -96,10 +96,10 @@ struct CoachingFeedbackView: View {
             Picker("Skill Level", selection: Binding(
                 get: { gameState.skillLevel },
                 set: { newLevel in
+                    print("🎯 Skill level changed to: \(newLevel.displayName)")
                     gameState.skillLevel = newLevel
-                    if gameState.isCoachingEnabled {
-                        gameState.enableCoaching(skillLevel: newLevel)
-                    }
+                    // Don't recreate session for skill level changes
+                    // The skill level is used for new sessions and coaching analysis
                 }
             )) {
                 ForEach(SkillLevel.allCases, id: \.self) { level in

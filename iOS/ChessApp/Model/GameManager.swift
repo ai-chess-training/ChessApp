@@ -478,12 +478,10 @@ class ChessGameState: @unchecked Sendable {
     // MARK: - Chess Coach Integration
 
     func enableCoaching(skillLevel: SkillLevel = .intermediate) {
-        print("🚨 ENABLE COACHING CALLED - THIS SHOULD SHOW UP!")
         print("🎯 enableCoaching called with skill level: \(skillLevel.displayName)")
         self.skillLevel = skillLevel
         isCoachingEnabled = true
         coachingDisabledByUndo = false
-        print("🎯 isCoachingEnabled set to: \(isCoachingEnabled)")
 
         // Create session if we don't have one
         if chessCoachAPI.currentSessionId == nil {
@@ -492,13 +490,32 @@ class ChessGameState: @unchecked Sendable {
                 await startNewCoachingSession()
             }
         } else {
-            print("🎯 Using existing session: \(chessCoachAPI.currentSessionId!)")
+            print("🎯 Reusing existing session: \(chessCoachAPI.currentSessionId!)")
         }
     }
 
     func disableCoaching() {
         isCoachingEnabled = false
         currentMoveFeedback = nil
+    }
+
+    func updateGameMode(_ newMode: GameMode) {
+        let previousMode = gameMode
+        gameMode = newMode
+
+        print("🎮 Updating game mode from \(previousMode.displayName) to \(newMode.displayName)")
+
+        // Only recreate session if coaching is enabled and mode actually changed
+        if isCoachingEnabled && previousMode != newMode {
+            print("🔄 Game mode change detected, recreating session...")
+            Task {
+                await startNewCoachingSession()
+            }
+        } else if previousMode != newMode {
+            print("ℹ️ Game mode changed but coaching is disabled - will use new mode when enabled")
+        } else {
+            print("ℹ️ Game mode unchanged")
+        }
     }
 
     @MainActor
