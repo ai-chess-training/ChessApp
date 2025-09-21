@@ -32,6 +32,7 @@ class ChessGameState: @unchecked Sendable {
     var currentMoveFeedback: MoveFeedback?
     var isAnalyzingMove: Bool = false
     var skillLevel: SkillLevel = .intermediate
+    var coachingDisabledByUndo: Bool = false
     
     // Chess rules engine and move history
     var ruleEngine: ChessRuleEngine?
@@ -326,6 +327,8 @@ class ChessGameState: @unchecked Sendable {
         guard let lastMove = moveHistoryManager.undoLastMove() else {
             return false
         }
+
+        print("⏪ Undo detected - will disable coaching (game state out of sync)")
         
         // Restore the piece to its original position
         let finalPiece: ChessPiece
@@ -388,7 +391,14 @@ class ChessGameState: @unchecked Sendable {
         
         // Clear selection
         selectedSquare = nil
-        
+
+        // Disable coaching if it was enabled (game state is now out of sync with server)
+        if isCoachingEnabled {
+            disableCoaching()
+            coachingDisabledByUndo = true
+            print("🔕 Coaching disabled due to undo operation")
+        }
+
         return true
     }
     
@@ -449,6 +459,7 @@ class ChessGameState: @unchecked Sendable {
         print("🎯 enableCoaching called with skill level: \(skillLevel.displayName)")
         self.skillLevel = skillLevel
         isCoachingEnabled = true
+        coachingDisabledByUndo = false
         print("🎯 isCoachingEnabled set to: \(isCoachingEnabled)")
 
         // Create session if we don't have one
@@ -498,6 +509,8 @@ class ChessGameState: @unchecked Sendable {
             let moveString = convertMoveToAlgebraic(lastMoveRecord, movingPlayer: movingPlayer)
             print("🎯 Analyzing move: \(moveString)")
             print("🎯 Session ID: \(chessCoachAPI.currentSessionId ?? "NONE")")
+            print("🎯 iOS move count: \(moveCount)")
+            print("🎯 iOS current player: \(currentPlayer)")
 
             let analysis = try await chessCoachAPI.analyzeCurrentMove(moveString)
 

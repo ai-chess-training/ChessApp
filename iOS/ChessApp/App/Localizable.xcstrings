@@ -25,6 +25,9 @@
     "Are you sure you want to sign out?" : {
 
     },
+    "Are you sure you want to undo the last move?" : {
+
+    },
     "Best line: %@" : {
 
     },
@@ -187,10 +190,16 @@
     "Coaching Defaults" : {
 
     },
+    "Coaching disabled" : {
+
+    },
     "Concepts" : {
 
     },
     "Configure the Chess Coach backend server connection. Use localhost for local development or your Mac's IP address for testing on device." : {
+
+    },
+    "Confirm Undo" : {
 
     },
     "Connected" : {
@@ -320,6 +329,9 @@
       }
     },
     "Game One" : {
+
+    },
+    "Game state is out of sync due to undo operation. Toggle coaching off and on again to resume." : {
 
     },
     "http://localhost:8000" : {
@@ -582,6 +594,12 @@
           }
         }
       }
+    },
+    "Undo Move" : {
+
+    },
+    "Undoing a move will disable coaching because the game state will be out of sync with the server." : {
+
     }
   },
   "version" : "1.0"

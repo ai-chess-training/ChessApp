@@ -55,10 +55,27 @@ struct CoachingFeedbackView: View {
                 if let feedback = gameState.currentMoveFeedback {
                     feedbackContent(feedback)
                 } else if !gameState.isAnalyzingMove {
-                    Text("Make a move to receive coaching feedback")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .italic()
+                    if gameState.coachingDisabledByUndo {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .foregroundColor(.orange)
+                                Text("Coaching disabled")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.orange)
+                            }
+                            Text("Game state is out of sync due to undo operation. Toggle coaching off and on again to resume.")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.vertical, 4)
+                    } else {
+                        Text("Make a move to receive coaching feedback")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .italic()
+                    }
                 }
 
                 // API connection status
