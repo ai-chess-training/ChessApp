@@ -518,6 +518,29 @@ class ChessGameState: @unchecked Sendable {
         }
     }
 
+    func updateSkillLevel(_ newLevel: SkillLevel) {
+        let previousLevel = skillLevel
+        skillLevel = newLevel
+
+        print("🎯 Updating skill level from \(previousLevel.displayName) to \(newLevel.displayName)")
+
+        // Only recreate session if coaching is enabled and level actually changed
+        if isCoachingEnabled && previousLevel != newLevel {
+            print("🔄 Skill level change detected, resetting board and recreating session...")
+
+            // Reset the board first to sync with new session
+            resetGame()
+
+            Task {
+                await startNewCoachingSession()
+            }
+        } else if previousLevel != newLevel {
+            print("ℹ️ Skill level changed but coaching is disabled - will use new level when enabled")
+        } else {
+            print("ℹ️ Skill level unchanged")
+        }
+    }
+
     @MainActor
     private func startNewCoachingSession() async {
         print("🎮 Starting new coaching session...")

@@ -9,6 +9,8 @@ import SwiftUI
 
 struct CoachingFeedbackView: View {
     let gameState: ChessGameState
+    @State private var showingSkillLevelAlert = false
+    @State private var pendingSkillLevel: SkillLevel?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -49,6 +51,14 @@ struct CoachingFeedbackView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
+                } else if gameState.chessCoachAPI.currentSessionId == nil && gameState.isCoachingEnabled {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Creating session...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
 
                 // Move feedback
@@ -85,6 +95,42 @@ struct CoachingFeedbackView: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+        .alert("Change Skill Level?", isPresented: $showingSkillLevelAlert) {
+            Button("Cancel", role: .cancel) {
+                // Revert to previous skill level
+                pendingSkillLevel = nil
+            }
+            Button("Reset & Change", role: .destructive) {
+                confirmSkillLevelChange()
+            }
+        } message: {
+            if let newLevel = pendingSkillLevel {
+                Text("Changing to \(newLevel.displayName) requires resetting the game because a new coaching session will be created. This will start a fresh game at the new difficulty level.")
+            }
+        }
+    }
+
+    // MARK: - Skill Level Change Handling
+
+    private func handleSkillLevelChange(to newLevel: SkillLevel) {
+        // Check if coaching is enabled and game is in progress
+        if gameState.isCoachingEnabled && gameState.moveCount > 0 && newLevel != gameState.skillLevel {
+            print("⚠️ Skill level change with game in progress - showing warning")
+            pendingSkillLevel = newLevel
+            showingSkillLevelAlert = true
+            return
+        }
+
+        // Direct change (no game in progress or coaching disabled)
+        gameState.updateSkillLevel(newLevel)
+    }
+
+    private func confirmSkillLevelChange() {
+        guard let newLevel = pendingSkillLevel else { return }
+
+        print("🔄 User confirmed skill level change - resetting game and updating level")
+        gameState.updateSkillLevel(newLevel)
+        pendingSkillLevel = nil
     }
 
     private var skillLevelPicker: some View {
@@ -96,10 +142,7 @@ struct CoachingFeedbackView: View {
             Picker("Skill Level", selection: Binding(
                 get: { gameState.skillLevel },
                 set: { newLevel in
-                    print("🎯 Skill level changed to: \(newLevel.displayName)")
-                    gameState.skillLevel = newLevel
-                    // Don't recreate session for skill level changes
-                    // The skill level is used for new sessions and coaching analysis
+                    handleSkillLevelChange(to: newLevel)
                 }
             )) {
                 ForEach(SkillLevel.allCases, id: \.self) { level in
