@@ -41,7 +41,7 @@ struct ChessBoardView: View {
             // Coaching analysis overlay
             Group {
                 if gameState.isAnalyzingMove {
-                    CoachingAnalysisOverlay()
+                    CoachingAnalysisOverlay(gameMode: gameState.gameMode, isWaitingForEngine: gameState.isWaitingForEngineMove)
                         .transition(.opacity.combined(with: .scale(scale: 0.9)))
                 }
             }
@@ -52,6 +52,8 @@ struct ChessBoardView: View {
 // MARK: - Coaching Analysis Overlay
 
 struct CoachingAnalysisOverlay: View {
+    let gameMode: GameMode
+    let isWaitingForEngine: Bool
     @State private var rotation: Double = 0
     @State private var pulseScale: Double = 1.0
 
@@ -63,10 +65,10 @@ struct CoachingAnalysisOverlay: View {
                 .background(.ultraThinMaterial.opacity(0.5))
 
             VStack(spacing: 16) {
-                // Animated chess brain icon
+                // Animated icon based on state
                 ZStack {
                     Circle()
-                        .fill(.blue.opacity(0.2))
+                        .fill(iconColor.opacity(0.2))
                         .frame(width: 80, height: 80)
                         .scaleEffect(pulseScale)
                         .onAppear {
@@ -75,9 +77,9 @@ struct CoachingAnalysisOverlay: View {
                             }
                         }
 
-                    Image(systemName: "brain")
+                    Image(systemName: iconName)
                         .font(.system(size: 32, weight: .medium))
-                        .foregroundColor(.blue)
+                        .foregroundColor(iconColor)
                         .rotationEffect(.degrees(rotation))
                         .onAppear {
                             withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
@@ -87,12 +89,12 @@ struct CoachingAnalysisOverlay: View {
                 }
 
                 VStack(spacing: 4) {
-                    Text("Analyzing Move...")
+                    Text(titleText)
                         .font(.headline)
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
 
-                    Text("Chess Coach is reviewing your move")
+                    Text(subtitleText)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -101,6 +103,42 @@ struct CoachingAnalysisOverlay: View {
         }
         .cornerRadius(8)
         .animation(.easeInOut(duration: 0.3), value: pulseScale)
+    }
+
+    // MARK: - Dynamic Content
+
+    private var iconName: String {
+        if isWaitingForEngine {
+            return "cpu"
+        } else {
+            return "brain"
+        }
+    }
+
+    private var iconColor: Color {
+        if isWaitingForEngine {
+            return .orange
+        } else {
+            return .blue
+        }
+    }
+
+    private var titleText: String {
+        if isWaitingForEngine {
+            return "Engine Thinking..."
+        } else {
+            return "Analyzing Move..."
+        }
+    }
+
+    private var subtitleText: String {
+        if isWaitingForEngine {
+            return "AI is calculating its move"
+        } else if gameMode == .humanVsMachine {
+            return "Chess Coach is analyzing your move"
+        } else {
+            return "Chess Coach is reviewing your move"
+        }
     }
 }
 
@@ -114,7 +152,18 @@ struct CoachingAnalysisOverlay: View {
             .fill(.gray.opacity(0.3))
             .frame(width: 300, height: 300)
 
-        CoachingAnalysisOverlay()
+        CoachingAnalysisOverlay(gameMode: .humanVsMachine, isWaitingForEngine: false)
+    }
+    .frame(width: 300, height: 300)
+}
+
+#Preview("Engine Thinking") {
+    ZStack {
+        Rectangle()
+            .fill(.gray.opacity(0.3))
+            .frame(width: 300, height: 300)
+
+        CoachingAnalysisOverlay(gameMode: .humanVsMachine, isWaitingForEngine: true)
     }
     .frame(width: 300, height: 300)
 }

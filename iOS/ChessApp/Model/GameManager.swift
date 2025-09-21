@@ -8,6 +8,27 @@
 import Observation
 import Foundation
 
+// MARK: - Game Mode
+
+enum GameMode: String, CaseIterable {
+    case humanVsHuman = "training"
+    case humanVsMachine = "play"
+
+    var displayName: String {
+        switch self {
+        case .humanVsHuman: return "Human vs Human"
+        case .humanVsMachine: return "Human vs Machine"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .humanVsHuman: return "Play against another human with coaching analysis"
+        case .humanVsMachine: return "Play against AI engine with coaching feedback"
+        }
+    }
+}
+
 @Observable
 class ChessGameState: @unchecked Sendable {
     var selectedSquare: ChessPosition?
@@ -25,14 +46,16 @@ class ChessGameState: @unchecked Sendable {
     var checkTrigger = false
     var stalemateTrigger = false
 
-    // MARK: - Chess Coach API Integration
+    // MARK: - Game Mode and Chess Coach API Integration
 
+    var gameMode: GameMode = .humanVsHuman
     var chessCoachAPI: ChessCoachAPI
     var isCoachingEnabled: Bool = false
     var currentMoveFeedback: MoveFeedback?
     var isAnalyzingMove: Bool = false
     var skillLevel: SkillLevel = .intermediate
     var coachingDisabledByUndo: Bool = false
+    var isWaitingForEngineMove: Bool = false
     
     // Chess rules engine and move history
     var ruleEngine: ChessRuleEngine?
@@ -245,8 +268,8 @@ class ChessGameState: @unchecked Sendable {
         // Switch players
         currentPlayer = currentPlayer == .white ? .black : .white
 
-        // Analyze the move if coaching is enabled
-        if isCoachingEnabled {
+        // Analyze the move if coaching is enabled (but not for engine moves)
+        if isCoachingEnabled && !isWaitingForEngineMove {
             Task {
                 await analyzeLastMove(for: movingPlayer)
             }
@@ -483,10 +506,11 @@ class ChessGameState: @unchecked Sendable {
         print("🎮 Starting new coaching session...")
 
         do {
-            let sessionResponse = try await chessCoachAPI.startNewGame(skillLevel: skillLevel)
+            let sessionResponse = try await chessCoachAPI.startNewGame(skillLevel: skillLevel, gameMode: gameMode.rawValue)
             print("✅ Started new coaching session:")
             print("   Session ID: \(sessionResponse.sessionId)")
             print("   Skill level: \(skillLevel.displayName)")
+            print("   Game mode: \(gameMode.displayName)")
             print("   Starting position: \(sessionResponse.fenStart)")
         } catch {
             print("❌ Failed to start coaching session: \(error)")
@@ -532,9 +556,23 @@ class ChessGameState: @unchecked Sendable {
             await MainActor.run {
                 currentMoveFeedback = analysis.humanFeedback
                 isAnalyzingMove = false
+
+                // Handle engine move in human vs machine mode
+                if gameMode == .humanVsMachine, let engineMove = analysis.engineMove {
+                    handleEngineMove(engineMove)
+                }
             }
 
             print("✅ Move analysis complete: \(analysis.humanFeedback?.basic ?? "No feedback")")
+
+            // Log engine move if present
+            if gameMode == .humanVsMachine {
+                if let engineMove = analysis.engineMove {
+                    print("🤖 Engine move: \(engineMove.san ?? engineMove.uci ?? "unknown")")
+                } else {
+                    print("🤖 No engine move (game may be over)")
+                }
+            }
 
         } catch {
             await MainActor.run {
@@ -559,6 +597,70 @@ class ChessGameState: @unchecked Sendable {
                 print("   JSON Decoding Error: \(decodingError)")
             }
         }
+    }
+
+    // MARK: - Engine Move Handling
+
+    @MainActor
+    private func handleEngineMove(_ engineMove: EngineMove) {
+        guard let uciMove = engineMove.uci else {
+            print("❌ Engine move missing UCI notation")
+            return
+        }
+
+        print("🤖 Processing engine move: \(uciMove)")
+
+        // Parse UCI move (e.g., "e2e4", "e7e8q" for promotion)
+        guard uciMove.count >= 4,
+              let fromPos = parseSquare(from: String(uciMove.prefix(2))),
+              let toPos = parseSquare(from: String(uciMove.dropFirst(2).prefix(2))) else {
+            print("❌ Failed to parse engine move: \(uciMove)")
+            return
+        }
+
+        // Handle promotion piece if present
+        let promotionPiece: PieceType? = {
+            if uciMove.count == 5 {
+                let promotionChar = uciMove.last!.lowercased()
+                switch promotionChar {
+                case "q": return .queen
+                case "r": return .rook
+                case "b": return .bishop
+                case "n": return .knight
+                default: return nil
+                }
+            }
+            return nil
+        }()
+
+        // Execute the engine move
+        print("🤖 Executing engine move (will not trigger analysis)")
+        isWaitingForEngineMove = true
+        let success = executeMove(from: fromPos, to: toPos, promoteTo: promotionPiece)
+        isWaitingForEngineMove = false
+
+        if success {
+            print("✅ Engine move executed successfully - no server analysis needed")
+        } else {
+            print("❌ Failed to execute engine move")
+        }
+    }
+
+    private func parseSquare(from uci: String) -> ChessPosition? {
+        guard uci.count == 2,
+              let file = uci.first?.asciiValue,
+              let rank = uci.last?.wholeNumberValue else {
+            return nil
+        }
+
+        let col = Int(file - 97) // 'a' = 97, so 'a' = 0, 'b' = 1, etc.
+        let row = 8 - rank      // rank 1 = row 7, rank 8 = row 0
+
+        guard col >= 0 && col < 8 && row >= 0 && row < 8 else {
+            return nil
+        }
+
+        return ChessPosition(row: row, col: col)
     }
 
     private func convertMoveToAlgebraic(_ move: ChessMoveRecord, movingPlayer: ChessColor) -> String {

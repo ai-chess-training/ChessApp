@@ -18,6 +18,9 @@ struct GameControlsView: View {
     
     var body: some View {
         VStack {
+            // Game Mode Selection
+            GameModeSelectionView(gameState: gameState)
+
             GameActionButtonsView(
                 gameState: gameState,
                 resetTrigger: $resetTrigger,
@@ -145,6 +148,66 @@ struct GameActionButtonsView: View {
             .buttonStyle(.bordered)
             .foregroundColor(.red)
             .sensoryFeedback(.impact(weight: .heavy), trigger: resignTrigger)
+        }
+    }
+}
+
+// MARK: - Game Mode Selection Component
+
+struct GameModeSelectionView: View {
+    @Bindable var gameState: ChessGameState
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Game Mode")
+                .font(.headline)
+                .fontWeight(.semibold)
+
+            Picker("Game Mode", selection: $gameState.gameMode) {
+                ForEach(GameMode.allCases, id: \.self) { mode in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(mode.displayName)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        Text(mode.description)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    .tag(mode)
+                }
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            .onChange(of: gameState.gameMode) { _, newMode in
+                handleGameModeChange(newMode)
+            }
+
+            // Current mode indicator
+            HStack {
+                Image(systemName: gameState.gameMode == .humanVsMachine ? "cpu" : "person.2")
+                    .foregroundColor(gameState.gameMode == .humanVsMachine ? .orange : .blue)
+                Text(gameState.gameMode.displayName)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Spacer()
+                if gameState.gameMode == .humanVsMachine {
+                    Text("Skill: \(gameState.skillLevel.displayName)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+
+    private func handleGameModeChange(_ newMode: GameMode) {
+        print("🎮 Game mode changed to: \(newMode.displayName)")
+
+        // Reset coaching session if it was enabled to use new game mode
+        if gameState.isCoachingEnabled {
+            gameState.disableCoaching()
+            gameState.enableCoaching(skillLevel: gameState.skillLevel)
         }
     }
 }

@@ -13,9 +13,6 @@
     "Analyzing move..." : {
 
     },
-    "Analyzing Move..." : {
-
-    },
     "API Base URL" : {
 
     },
@@ -161,9 +158,6 @@
 
     },
     "Chess Coach API" : {
-
-    },
-    "Chess Coach is reviewing your move" : {
 
     },
     "ChessApp" : {
@@ -333,6 +327,9 @@
           }
         }
       }
+    },
+    "Game Mode" : {
+
     },
     "Game One" : {
 
@@ -542,6 +539,9 @@
 
     },
     "Skill Level" : {
+
+    },
+    "Skill: %@" : {
 
     },
     "Stalemate!" : {
