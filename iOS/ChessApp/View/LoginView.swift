@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AuthenticationServices
 
 struct LoginView: View {
     @Bindable var authManager: AuthenticationManager
@@ -52,8 +53,26 @@ struct SignInSection: View {
                     .cornerRadius(8)
             }
 
+            // Apple Sign-In Button
+            Button(action: {
+                authManager.signInWithApple()
+            }) {
+                HStack {
+                    Image(systemName: "applelogo")
+                        .foregroundColor(.white)
+
+                    Text("Sign in with Apple")
+                        .foregroundColor(.white)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.black)
+                .cornerRadius(8)
+            }
+            .buttonStyle(.plain)
+
             GoogleSignInButton {
-                authManager.signIn()
+                authManager.signInWithGoogle()
             }
 
             Text("Or continue as guest")

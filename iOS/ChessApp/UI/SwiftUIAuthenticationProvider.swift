@@ -9,11 +9,15 @@
 import SwiftUI
 import UIKit
 import GoogleSignIn
+import AuthenticationServices
 
 /// SwiftUI implementation of AuthenticationUIProvider
 /// This class handles all UI-related authentication concerns
 @MainActor
-class SwiftUIAuthenticationProvider: AuthenticationUIProvider {
+class SwiftUIAuthenticationProvider: NSObject, AuthenticationUIProvider {
+
+    // Apple Sign-In completion handler
+    private var appleSignInCompletion: ((Result<ASAuthorization, Error>) -> Void)?
 
     // MARK: - AuthenticationUIProvider Implementation
 
@@ -39,6 +43,20 @@ class SwiftUIAuthenticationProvider: AuthenticationUIProvider {
                 }
             }
         }
+    }
+
+    func presentAppleSignIn(completion: @escaping (Result<ASAuthorization, Error>) -> Void) {
+        // Store completion handler for delegate callbacks
+        self.appleSignInCompletion = completion
+
+        let appleIDProvider = ASAuthorizationAppleIDProvider()
+        let request = appleIDProvider.createRequest()
+        request.requestedScopes = [.fullName, .email]
+
+        let authorizationController = ASAuthorizationController(authorizationRequests: [request])
+        authorizationController.delegate = self
+        authorizationController.presentationContextProvider = self
+        authorizationController.performRequests()
     }
 
     func presentError(_ message: String) {
@@ -74,11 +92,45 @@ class SwiftUIAuthenticationProvider: AuthenticationUIProvider {
     }
 }
 
+// MARK: - ASAuthorizationControllerDelegate
+
+extension SwiftUIAuthenticationProvider: ASAuthorizationControllerDelegate {
+    nonisolated func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        Task { @MainActor in
+            appleSignInCompletion?(.success(authorization))
+            appleSignInCompletion = nil
+        }
+    }
+
+    nonisolated func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        Task { @MainActor in
+            appleSignInCompletion?(.failure(error))
+            appleSignInCompletion = nil
+        }
+    }
+}
+
+// MARK: - ASAuthorizationControllerPresentationContextProviding
+
+extension SwiftUIAuthenticationProvider: ASAuthorizationControllerPresentationContextProviding {
+    nonisolated func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else {
+            return ASPresentationAnchor()
+        }
+        return window
+    }
+}
+
 // MARK: - SwiftUI Environment Integration
 
 /// Environment key for authentication UI provider
 private struct AuthenticationUIProviderKey: EnvironmentKey {
-    static let defaultValue: SwiftUIAuthenticationProvider = SwiftUIAuthenticationProvider()
+    nonisolated static let defaultValue: SwiftUIAuthenticationProvider = {
+        MainActor.assumeIsolated {
+            SwiftUIAuthenticationProvider()
+        }
+    }()
 }
 
 extension EnvironmentValues {

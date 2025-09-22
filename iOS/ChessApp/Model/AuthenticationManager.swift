@@ -7,18 +7,27 @@
 
 import Foundation
 import GoogleSignIn
+import AuthenticationServices
 
 struct AppUser: Sendable {
     let name: String
     let email: String
     let imageURL: String?
     let isGuest: Bool
+    let authProvider: AuthProvider
 
-    init(name: String, email: String, imageURL: String?, isGuest: Bool) {
+    enum AuthProvider: String, Sendable {
+        case google = "google"
+        case apple = "apple"
+        case guest = "guest"
+    }
+
+    init(name: String, email: String, imageURL: String?, isGuest: Bool, authProvider: AuthProvider = .guest) {
         self.name = name
         self.email = email
         self.imageURL = imageURL
         self.isGuest = isGuest
+        self.authProvider = authProvider
     }
 
     init(from googleUser: GIDGoogleUser) {
@@ -26,9 +35,30 @@ struct AppUser: Sendable {
         self.email = googleUser.profile?.email ?? ""
         self.imageURL = googleUser.profile?.imageURL(withDimension: 100)?.absoluteString
         self.isGuest = false
+        self.authProvider = .google
     }
 
-    static let guest = AppUser(name: "Guest", email: "", imageURL: nil, isGuest: true)
+    init(from appleIDCredential: ASAuthorizationAppleIDCredential) {
+        // Apple provides limited info, use email as name if full name not available
+        let fullName = appleIDCredential.fullName
+        let displayName: String
+
+        if let givenName = fullName?.givenName, let familyName = fullName?.familyName {
+            displayName = "\(givenName) \(familyName)"
+        } else if let givenName = fullName?.givenName {
+            displayName = givenName
+        } else {
+            displayName = appleIDCredential.email ?? "Apple User"
+        }
+
+        self.name = displayName
+        self.email = appleIDCredential.email ?? ""
+        self.imageURL = nil // Apple doesn't provide profile images
+        self.isGuest = false
+        self.authProvider = .apple
+    }
+
+    static let guest = AppUser(name: "Guest", email: "", imageURL: nil, isGuest: true, authProvider: .guest)
 }
 
 @MainActor @Observable
@@ -67,7 +97,7 @@ class AuthenticationManager {
         }
     }
 
-    func signIn() {
+    func signInWithGoogle() {
         guard let uiProvider = uiProvider else {
             self.errorMessage = AuthenticationError.noUIProvider.localizedDescription
             return
@@ -82,6 +112,34 @@ class AuthenticationManager {
                 self.user = appUser
                 self.isSignedIn = true
                 self.errorMessage = nil
+
+            case .failure(let error):
+                self.errorMessage = error.localizedDescription
+                self.isSignedIn = false
+            }
+        }
+    }
+
+    func signInWithApple() {
+        guard let uiProvider = uiProvider else {
+            self.errorMessage = AuthenticationError.noUIProvider.localizedDescription
+            return
+        }
+
+        uiProvider.presentAppleSignIn { [weak self] result in
+            guard let self = self else { return }
+
+            switch result {
+            case .success(let authorization):
+                if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+                    let appUser = AppUser(from: appleIDCredential)
+                    self.user = appUser
+                    self.isSignedIn = true
+                    self.errorMessage = nil
+                } else {
+                    self.errorMessage = "Invalid Apple ID credential"
+                    self.isSignedIn = false
+                }
 
             case .failure(let error):
                 self.errorMessage = error.localizedDescription
