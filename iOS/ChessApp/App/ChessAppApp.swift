@@ -10,14 +10,16 @@ import SwiftUI
 @main
 struct ChessAppApp: App {
     @State private var authManager = AuthenticationManager()
-    
+
     var body: some Scene {
         WindowGroup {
             if authManager.isSignedIn {
                 ContentView()
                     .environment(authManager)
+                    .withAuthenticationUI(authManager)
             } else {
                 LoginView(authManager: authManager)
+                    .withAuthenticationUI(authManager)
             }
         }
     }

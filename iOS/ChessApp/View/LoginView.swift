@@ -100,5 +100,7 @@ struct GoogleSignInButton: View {
 }
 
 #Preview {
-    LoginView(authManager: AuthenticationManager())
+    let authManager = AuthenticationManager()
+    LoginView(authManager: authManager)
+        .withAuthenticationUI(authManager)
 }

@@ -190,9 +190,9 @@ class ChessCoachAPI: @unchecked Sendable {
         } catch {
             isConnected = false
             lastError = error.localizedDescription
-            print("🚨 Session creation failed:")
-            print("   URL: \(components.url?.absoluteString ?? "invalid")")
-            print("   Error: \(error)")
+            Logger.error("Session creation failed", category: Logger.api)
+            Logger.error("URL: \(components.url?.absoluteString ?? "invalid")", category: Logger.api)
+            Logger.error("Error: \(error)", category: Logger.api)
             throw error
         }
     }
@@ -224,14 +224,14 @@ class ChessCoachAPI: @unchecked Sendable {
         if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 400 {
             if let errorMessage = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let detail = errorMessage["detail"] as? String {
-                print("🚨 API Error 400: \(detail)")
+                Logger.error("API Error 400: \(detail)", category: Logger.api)
                 throw APIError.badRequest
             }
         }
 
         // Debug: Print successful responses
         if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-            print("✅ API Success 200: Move analysis received")
+            Logger.debug("API Success 200: Move analysis received", category: Logger.api)
         }
 
         try validateResponse(response)
@@ -257,14 +257,14 @@ class ChessCoachAPI: @unchecked Sendable {
     }
 
     func startNewGame(skillLevel: SkillLevel = .intermediate, gameMode: String = "training") async throws -> SessionResponse {
-        print("🔄 Starting new game, clearing session...")
+        Logger.debug("Starting new game, clearing session...", category: Logger.api)
         currentSessionId = nil
 
-        print("📡 Creating new session...")
+        Logger.debug("Creating new session...", category: Logger.api)
         let sessionResponse = try await createSession(skillLevel: skillLevel, gameMode: gameMode)
 
-        print("✅ Session created successfully: \(sessionResponse.sessionId)")
-        print("   Game mode: \(gameMode)")
+        Logger.info("Session created successfully: \(sessionResponse.sessionId)", category: Logger.api)
+        Logger.debug("Game mode: \(gameMode)", category: Logger.api)
         return sessionResponse
     }
 
