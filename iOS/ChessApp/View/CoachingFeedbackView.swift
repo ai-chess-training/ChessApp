@@ -149,7 +149,7 @@ struct CoachingFeedbackView: View {
     private func handleSkillLevelChange(to newLevel: SkillLevel) {
         // Check if coaching is enabled and game is in progress
         if gameState.isCoachingEnabled && gameState.moveCount > 0 && newLevel != gameState.skillLevel {
-            print("⚠️ Skill level change with game in progress - showing warning")
+            Logger.debug("Skill level change with game in progress - showing warning", category: Logger.ui)
             pendingSkillLevel = newLevel
             showingSkillLevelAlert = true
             return
@@ -162,7 +162,7 @@ struct CoachingFeedbackView: View {
     private func confirmSkillLevelChange() {
         guard let newLevel = pendingSkillLevel else { return }
 
-        print("🔄 User confirmed skill level change - resetting game and updating level")
+        Logger.debug("User confirmed skill level change - resetting game and updating level", category: Logger.ui)
         gameState.updateSkillLevel(newLevel)
         pendingSkillLevel = nil
     }

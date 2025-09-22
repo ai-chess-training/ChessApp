@@ -154,21 +154,21 @@ class ChessGameState: @unchecked Sendable {
     func attemptMove(from: ChessPosition, to: ChessPosition) -> Bool {
         guard let ruleEngine = ruleEngine else { return false }
         
-        print("Attempting move from (\(from.row), \(from.col)) to (\(to.row), \(to.col))")
+        Logger.debug("Attempting move from (\(from.row), \(from.col)) to (\(to.row), \(to.col))", category: Logger.game)
         
         let validationResult = ruleEngine.canMovePiece(from: from, to: to, gameState: self)
         
         switch validationResult {
         case .valid:
-            print("Move is valid, executing...")
+            Logger.debug("Move is valid, executing...", category: Logger.game)
             return executeMove(from: from, to: to)
         case .requiresPromotion(_):
-            print("Pawn promotion required, showing UI")
+            Logger.debug("Pawn promotion required, showing UI", category: Logger.game)
             promotionMove = (from: from, to: to)
             showingPawnPromotion = true
             return true // Return true to indicate move handling is in progress
         case .invalid(let reason):
-            print("Invalid move: \(reason)")
+            Logger.debug("Invalid move: \(reason)", category: Logger.game)
             return false
         }
     }
@@ -351,7 +351,7 @@ class ChessGameState: @unchecked Sendable {
             return false
         }
 
-        print("⏪ Undo detected - will disable coaching (game state out of sync)")
+        Logger.warning("Undo detected - will disable coaching (game state out of sync)", category: Logger.coaching)
         
         // Restore the piece to its original position
         let finalPiece: ChessPiece
@@ -419,7 +419,7 @@ class ChessGameState: @unchecked Sendable {
         if isCoachingEnabled {
             disableCoaching()
             coachingDisabledByUndo = true
-            print("🔕 Coaching disabled due to undo operation")
+            Logger.debug("Coaching disabled due to undo operation", category: Logger.coaching)
         }
 
         return true
@@ -478,19 +478,19 @@ class ChessGameState: @unchecked Sendable {
     // MARK: - Chess Coach Integration
 
     func enableCoaching(skillLevel: SkillLevel = .intermediate) {
-        print("🎯 enableCoaching called with skill level: \(skillLevel.displayName)")
+        Logger.debug("enableCoaching called with skill level: \(skillLevel.displayName)", category: Logger.coaching)
         self.skillLevel = skillLevel
         isCoachingEnabled = true
         coachingDisabledByUndo = false
 
         // Create session if we don't have one
         if chessCoachAPI.currentSessionId == nil {
-            print("🎯 No active session, creating one...")
+            Logger.debug("No active session, creating one...", category: Logger.coaching)
             Task {
                 await startNewCoachingSession()
             }
         } else {
-            print("🎯 Reusing existing session: \(chessCoachAPI.currentSessionId!)")
+            Logger.debug("Reusing existing session: \(chessCoachAPI.currentSessionId!)", category: Logger.coaching)
         }
     }
 
@@ -503,18 +503,18 @@ class ChessGameState: @unchecked Sendable {
         let previousMode = gameMode
         gameMode = newMode
 
-        print("🎮 Updating game mode from \(previousMode.displayName) to \(newMode.displayName)")
+        Logger.debug("Updating game mode from \(previousMode.displayName) to \(newMode.displayName)", category: Logger.coaching)
 
         // Only recreate session if coaching is enabled and mode actually changed
         if isCoachingEnabled && previousMode != newMode {
-            print("🔄 Game mode change detected, recreating session...")
+            Logger.debug("Game mode change detected, recreating session...", category: Logger.coaching)
             Task {
                 await startNewCoachingSession()
             }
         } else if previousMode != newMode {
-            print("ℹ️ Game mode changed but coaching is disabled - will use new mode when enabled")
+            Logger.debug("Game mode changed but coaching is disabled - will use new mode when enabled", category: Logger.coaching)
         } else {
-            print("ℹ️ Game mode unchanged")
+            Logger.debug("Game mode unchanged", category: Logger.coaching)
         }
     }
 
@@ -522,11 +522,11 @@ class ChessGameState: @unchecked Sendable {
         let previousLevel = skillLevel
         skillLevel = newLevel
 
-        print("🎯 Updating skill level from \(previousLevel.displayName) to \(newLevel.displayName)")
+        Logger.debug("Updating skill level from \(previousLevel.displayName) to \(newLevel.displayName)", category: Logger.coaching)
 
         // Only recreate session if coaching is enabled and level actually changed
         if isCoachingEnabled && previousLevel != newLevel {
-            print("🔄 Skill level change detected, resetting board and recreating session...")
+            Logger.debug("Skill level change detected, resetting board and recreating session...", category: Logger.coaching)
 
             // Reset the board first to sync with new session
             resetGame()
@@ -535,49 +535,49 @@ class ChessGameState: @unchecked Sendable {
                 await startNewCoachingSession()
             }
         } else if previousLevel != newLevel {
-            print("ℹ️ Skill level changed but coaching is disabled - will use new level when enabled")
+            Logger.debug("Skill level changed but coaching is disabled - will use new level when enabled", category: Logger.coaching)
         } else {
-            print("ℹ️ Skill level unchanged")
+            Logger.debug("Skill level unchanged", category: Logger.coaching)
         }
     }
 
     @MainActor
     private func startNewCoachingSession() async {
-        print("🎮 Starting new coaching session...")
+        Logger.debug("Starting new coaching session...", category: Logger.coaching)
 
         do {
             let sessionResponse = try await chessCoachAPI.startNewGame(skillLevel: skillLevel, gameMode: gameMode.rawValue)
-            print("✅ Started new coaching session:")
-            print("   Session ID: \(sessionResponse.sessionId)")
-            print("   Skill level: \(skillLevel.displayName)")
-            print("   Game mode: \(gameMode.displayName)")
-            print("   Starting position: \(sessionResponse.fenStart)")
+            Logger.info("Started new coaching session", category: Logger.coaching)
+            Logger.debug("Session ID: \(sessionResponse.sessionId)", category: Logger.coaching)
+            Logger.debug("Skill level: \(skillLevel.displayName)", category: Logger.coaching)
+            Logger.debug("Game mode: \(gameMode.displayName)", category: Logger.coaching)
+            Logger.debug("Starting position: \(sessionResponse.fenStart)", category: Logger.coaching)
         } catch {
-            print("❌ Failed to start coaching session: \(error)")
-            print("   Error type: \(type(of: error))")
-            print("   Error description: \(error.localizedDescription)")
+            Logger.error("Failed to start coaching session: \(error)", category: Logger.coaching)
+            Logger.error("Error type: \(type(of: error))", category: Logger.coaching)
+            Logger.error("Error description: \(error.localizedDescription)", category: Logger.coaching)
         }
     }
 
     func analyzeLastMove(for movingPlayer: ChessColor) async {
-        print("🔍 analyzeLastMove called for: \(movingPlayer == .white ? "White" : "Black")")
+        Logger.debug("analyzeLastMove called for: \(movingPlayer == .white ? "White" : "Black")", category: Logger.coaching)
 
         guard isCoachingEnabled else {
-            print("❌ Coaching not enabled")
+            Logger.debug("Coaching not enabled", category: Logger.coaching)
             return
         }
 
         guard let lastMoveRecord = moveHistoryManager.getLastMove() else {
-            print("❌ No last move record found")
+            Logger.debug("No last move record found", category: Logger.coaching)
             return
         }
 
         guard !isAnalyzingMove else {
-            print("❌ Already analyzing a move")
+            Logger.debug("Already analyzing a move", category: Logger.coaching)
             return
         }
 
-        print("✅ All guards passed, starting analysis for \(movingPlayer == .white ? "White" : "Black")")
+        Logger.debug("All guards passed, starting analysis for \(movingPlayer == .white ? "White" : "Black")", category: Logger.coaching)
 
         await MainActor.run {
             isAnalyzingMove = true
@@ -586,10 +586,10 @@ class ChessGameState: @unchecked Sendable {
         do {
             // Convert move to algebraic notation
             let moveString = convertMoveToAlgebraic(lastMoveRecord, movingPlayer: movingPlayer)
-            print("🎯 Analyzing move: \(moveString)")
-            print("🎯 Session ID: \(chessCoachAPI.currentSessionId ?? "NONE")")
-            print("🎯 iOS move count: \(moveCount)")
-            print("🎯 iOS current player: \(currentPlayer)")
+            Logger.debug("Analyzing move: \(moveString)", category: Logger.coaching)
+            Logger.debug("Session ID: \(chessCoachAPI.currentSessionId ?? "NONE")", category: Logger.coaching)
+            Logger.debug("iOS move count: \(moveCount)", category: Logger.coaching)
+            Logger.debug("iOS current player: \(currentPlayer)", category: Logger.coaching)
 
             let analysis = try await chessCoachAPI.analyzeCurrentMove(moveString)
 
@@ -603,14 +603,14 @@ class ChessGameState: @unchecked Sendable {
                 }
             }
 
-            print("✅ Move analysis complete: \(analysis.humanFeedback?.basic ?? "No feedback")")
+            Logger.info("Move analysis complete: \(analysis.humanFeedback?.basic ?? "No feedback")", category: Logger.coaching)
 
             // Log engine move if present
             if gameMode == .humanVsMachine {
                 if let engineMove = analysis.engineMove {
-                    print("🤖 Engine move: \(engineMove.san ?? engineMove.uci ?? "unknown")")
+                    Logger.debug("Engine move: \(engineMove.san ?? engineMove.uci ?? "unknown")", category: Logger.game)
                 } else {
-                    print("🤖 No engine move (game may be over)")
+                    Logger.debug("No engine move (game may be over)", category: Logger.game)
                 }
             }
 
@@ -618,23 +618,23 @@ class ChessGameState: @unchecked Sendable {
             await MainActor.run {
                 isAnalyzingMove = false
             }
-            print("❌ Failed to analyze move: \(error)")
-            print("   Error type: \(type(of: error))")
-            print("   Error description: \(error.localizedDescription)")
+            Logger.error("Failed to analyze move: \(error)", category: Logger.coaching)
+            Logger.error("Error type: \(type(of: error))", category: Logger.coaching)
+            Logger.error("Error description: \(error.localizedDescription)", category: Logger.coaching)
 
             // If it's an API error, let's see the details
             if let apiError = error as? APIError {
-                print("   API Error details: \(apiError.localizedDescription)")
+                Logger.error("API Error details: \(apiError.localizedDescription)", category: Logger.api)
             }
 
             // Check for specific error types
             if let urlError = error as? URLError {
-                print("   URL Error code: \(urlError.code)")
-                print("   URL Error description: \(urlError.localizedDescription)")
+                Logger.error("URL Error code: \(urlError.code)", category: Logger.api)
+                Logger.error("URL Error description: \(urlError.localizedDescription)", category: Logger.api)
             }
 
             if let decodingError = error as? DecodingError {
-                print("   JSON Decoding Error: \(decodingError)")
+                Logger.error("JSON Decoding Error: \(decodingError)", category: Logger.api)
             }
         }
     }
@@ -644,17 +644,17 @@ class ChessGameState: @unchecked Sendable {
     @MainActor
     private func handleEngineMove(_ engineMove: EngineMove) {
         guard let uciMove = engineMove.uci else {
-            print("❌ Engine move missing UCI notation")
+            Logger.error("Engine move missing UCI notation", category: Logger.game)
             return
         }
 
-        print("🤖 Processing engine move: \(uciMove)")
+        Logger.debug("Processing engine move: \(uciMove)", category: Logger.game)
 
         // Parse UCI move (e.g., "e2e4", "e7e8q" for promotion)
         guard uciMove.count >= 4,
               let fromPos = parseSquare(from: String(uciMove.prefix(2))),
               let toPos = parseSquare(from: String(uciMove.dropFirst(2).prefix(2))) else {
-            print("❌ Failed to parse engine move: \(uciMove)")
+            Logger.error("Failed to parse engine move: \(uciMove)", category: Logger.game)
             return
         }
 
@@ -674,15 +674,15 @@ class ChessGameState: @unchecked Sendable {
         }()
 
         // Execute the engine move
-        print("🤖 Executing engine move (will not trigger analysis)")
+        Logger.debug("Executing engine move (will not trigger analysis)", category: Logger.game)
         isWaitingForEngineMove = true
         let success = executeMove(from: fromPos, to: toPos, promoteTo: promotionPiece)
         isWaitingForEngineMove = false
 
         if success {
-            print("✅ Engine move executed successfully - no server analysis needed")
+            Logger.debug("Engine move executed successfully - no server analysis needed", category: Logger.game)
         } else {
-            print("❌ Failed to execute engine move")
+            Logger.error("Failed to execute engine move", category: Logger.game)
         }
     }
 
@@ -719,8 +719,8 @@ class ChessGameState: @unchecked Sendable {
         // Debug: Show the piece that moved (from move record)
         let pieceInfo = "\(move.piece.color) \(move.piece.type)"
 
-        print("🔍 Move conversion: (\(move.from.row),\(move.from.col)) -> (\(move.to.row),\(move.to.col)) = \(fromSquare)\(toSquare)")
-        print("🔍 Piece moved: \(pieceInfo), Moving player: \(movingPlayer)")
+        Logger.debug("Move conversion: (\(move.from.row),\(move.from.col)) -> (\(move.to.row),\(move.to.col)) = \(fromSquare)\(toSquare)", category: Logger.game)
+        Logger.debug("Piece moved: \(pieceInfo), Moving player: \(movingPlayer)", category: Logger.game)
 
         return "\(fromSquare)\(toSquare)"
     }

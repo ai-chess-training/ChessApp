@@ -213,7 +213,7 @@ struct GameModeSelectionView: View {
     private func handleGameModeChange(from oldMode: GameMode, to newMode: GameMode) {
         // Check if switching modes with game in progress
         if oldMode != newMode && gameState.moveCount > 0 {
-            print("⚠️ Switching game modes with game in progress - showing warning")
+            Logger.debug("Switching game modes with game in progress - showing warning", category: Logger.ui)
             pendingGameMode = oldMode
             showingModeChangeAlert = true
             return
@@ -224,7 +224,7 @@ struct GameModeSelectionView: View {
     }
 
     private func confirmModeChange() {
-        print("🔄 User confirmed mode change - resetting game and switching mode")
+        Logger.debug("User confirmed mode change - resetting game and switching mode", category: Logger.ui)
 
         // Reset the game first
         gameState.resetGame()
