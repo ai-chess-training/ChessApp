@@ -120,11 +120,15 @@ struct ContentView: View {
 
 
 #Preview("Portrait", traits: .portrait) {
+    let authManager = AuthenticationManager()
     ContentView()
-        .environment(AuthenticationManager())
+        .environment(authManager)
+        .withAuthenticationUI(authManager)
 }
 
 #Preview("Landscape", traits: .landscapeLeft) {
+    let authManager = AuthenticationManager()
     ContentView()
-        .environment(AuthenticationManager())
+        .environment(authManager)
+        .withAuthenticationUI(authManager)
 }

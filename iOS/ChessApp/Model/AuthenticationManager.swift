@@ -7,8 +7,6 @@
 
 import Foundation
 import GoogleSignIn
-import SwiftUI
-import UIKit
 
 struct AppUser: Sendable {
     let name: String
@@ -39,6 +37,9 @@ class AuthenticationManager {
     var user: AppUser?
     var errorMessage: String?
 
+    // UI provider for handling presentation (injected from UI layer)
+    weak var uiProvider: AuthenticationUIProvider?
+
     init() {
         configureGoogleSignIn()
         checkAuthenticationStatus()
@@ -67,47 +68,28 @@ class AuthenticationManager {
     }
 
     func signIn() {
-        Task {
-            guard let presentingViewController = await getRootViewController() else {
-                self.errorMessage = "Could not find presenting view controller"
-                return
-            }
+        guard let uiProvider = uiProvider else {
+            self.errorMessage = AuthenticationError.noUIProvider.localizedDescription
+            return
+        }
 
-            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-                GIDSignIn.sharedInstance.signIn(withPresenting: presentingViewController) { result, error in
-                    if let error = error {
-                        Task { @MainActor in
-                            self.errorMessage = error.localizedDescription
-                            continuation.resume()
-                        }
-                    } else if let googleUser = result?.user {
-                        let appUser = AppUser(from: googleUser)
-                        Task { @MainActor in
-                            self.user = appUser
-                            self.isSignedIn = true
-                            self.errorMessage = nil
-                            continuation.resume()
-                        }
-                    } else {
-                        Task { @MainActor in
-                            self.errorMessage = "Failed to get user information"
-                            continuation.resume()
-                        }
-                    }
-                }
+        uiProvider.presentGoogleSignIn { [weak self] result in
+            guard let self = self else { return }
+
+            switch result {
+            case .success(let googleUser):
+                let appUser = AppUser(from: googleUser)
+                self.user = appUser
+                self.isSignedIn = true
+                self.errorMessage = nil
+
+            case .failure(let error):
+                self.errorMessage = error.localizedDescription
+                self.isSignedIn = false
             }
         }
     }
 
-    nonisolated private func getRootViewController() async -> UIViewController? {
-        await MainActor.run {
-            guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                  let window = windowScene.windows.first else {
-                return nil
-            }
-            return window.rootViewController
-        }
-    }
 
     func signOut() {
         GIDSignIn.sharedInstance.signOut()
