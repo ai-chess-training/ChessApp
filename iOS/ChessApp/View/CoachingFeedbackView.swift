@@ -42,23 +42,21 @@ struct CoachingFeedbackView: View {
                 // Skill level picker
                 skillLevelPicker
 
-                // Analysis status
+                // Analysis status with enhanced UI
                 if gameState.isAnalyzingMove {
-                    HStack {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                        Text("Analyzing move...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    analysisStatusView(
+                        icon: "brain",
+                        title: "Analyzing move...",
+                        subtitle: "Chess Coach is reviewing your move",
+                        color: .blue
+                    )
                 } else if gameState.chessCoachAPI.currentSessionId == nil && gameState.isCoachingEnabled {
-                    HStack {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                        Text("Creating session...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    analysisStatusView(
+                        icon: "cpu",
+                        title: "Creating session...",
+                        subtitle: "Setting up coaching session",
+                        color: .orange
+                    )
                 }
 
                 // Move feedback
@@ -108,6 +106,42 @@ struct CoachingFeedbackView: View {
                 Text("Changing to \(newLevel.displayName) requires resetting the game because a new coaching session will be created. This will start a fresh game at the new difficulty level.")
             }
         }
+    }
+
+    // MARK: - Analysis Status View
+
+    private func analysisStatusView(icon: String, title: String, subtitle: String, color: Color) -> some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.1))
+                    .frame(width: 32, height: 32)
+
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(color)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.primary)
+
+                Text(subtitle)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            ProgressView()
+                .scaleEffect(0.8)
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
     }
 
     // MARK: - Skill Level Change Handling
