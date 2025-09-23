@@ -9,4 +9,5 @@ import Foundation
 
 struct FeatureFlags {
     static let isGoogleLoginEnabled = false
+    static let hasMultiplePlayMode = false //Means only play with engine.
 }

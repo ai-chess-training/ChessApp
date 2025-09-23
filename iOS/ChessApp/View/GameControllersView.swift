@@ -19,7 +19,9 @@ struct GameControlsView: View {
     var body: some View {
         VStack {
             // Game Mode Selection
-            GameModeSelectionView(gameState: gameState)
+            if FeatureFlags.hasMultiplePlayMode {
+                GameModeSelectionView(gameState: gameState)
+            }
 
             GameActionButtonsView(
                 gameState: gameState,
@@ -110,7 +112,6 @@ struct GameActionButtonsView: View {
     @Binding var undoTrigger: Bool
     @Binding var resignTrigger: Bool
 
-    @State private var showingUndoAlert = false
 
     var body: some View {
         HStack(spacing: 20) {
@@ -120,26 +121,6 @@ struct GameActionButtonsView: View {
             }
             .buttonStyle(.borderedProminent)
             .sensoryFeedback(.impact(weight: .light), trigger: resetTrigger)
-
-            Button(String(localized: "Undo", comment: "Undo move button text")) {
-                showingUndoAlert = true
-            }
-            .buttonStyle(.bordered)
-            .disabled(!gameState.canUndo())
-            .alert("Confirm Undo", isPresented: $showingUndoAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Undo Move", role: .destructive) {
-                    undoTrigger.toggle()
-                    let _ = gameState.undoLastMove()
-                }
-            } message: {
-                if gameState.isCoachingEnabled {
-                    Text("Undoing a move will disable coaching because the game state will be out of sync with the server.")
-                } else {
-                    Text("Are you sure you want to undo the last move?")
-                }
-            }
-            .sensoryFeedback(.impact(weight: .medium), trigger: undoTrigger)
 
             Button(String(localized: "Resign", comment: "Resign game button text")) {
                 resignTrigger.toggle()
