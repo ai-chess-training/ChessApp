@@ -74,7 +74,9 @@ class AuthenticationManager {
     weak var uiProvider: AuthenticationUIProvider?
 
     init() {
-        configureGoogleSignIn()
+        if FeatureFlags.isGoogleLoginEnabled {
+            configureGoogleSignIn()
+        }
         checkAuthenticationStatus()
     }
 
@@ -89,15 +91,6 @@ class AuthenticationManager {
         }
 
         GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientId)
-        GIDSignIn.sharedInstance.restorePreviousSignIn { result, error in
-            if let googleUser = result {
-                let appUser = AppUser(from: googleUser)
-                Task { @MainActor in
-                    self.user = appUser
-                    self.isSignedIn = true
-                }
-            }
-        }
     }
 
     func signInWithGoogle() {
@@ -157,7 +150,20 @@ class AuthenticationManager {
                 }
 
             case .failure(let error):
-                self.errorMessage = error.localizedDescription
+                // Handle Apple Sign-In cancellation gracefully
+                if let authError = error as? ASAuthorizationError {
+                    switch authError.code {
+                    case .canceled:
+                        // User canceled - don't show error message
+                        self.errorMessage = nil
+                    case .unknown, .invalidResponse, .notHandled, .failed:
+                        self.errorMessage = "Apple Sign-In failed. Please try again."
+                    @unknown default:
+                        self.errorMessage = "Apple Sign-In failed. Please try again."
+                    }
+                } else {
+                    self.errorMessage = error.localizedDescription
+                }
                 self.isSignedIn = false
             }
         }
@@ -190,7 +196,20 @@ class AuthenticationManager {
 
 
     func signOut() {
-        GIDSignIn.sharedInstance.signOut()
+        // Sign out from Google if enabled and user is signed in with Google
+        if FeatureFlags.isGoogleLoginEnabled && user?.authProvider == .google {
+            GIDSignIn.sharedInstance.signOut()
+        }
+
+        // For Apple ID, we clear stored user info
+        if user?.authProvider == .apple {
+            let userDefaults = UserDefaults.standard
+            userDefaults.removeObject(forKey: "apple_user_id")
+            userDefaults.removeObject(forKey: "apple_user_email")
+            userDefaults.removeObject(forKey: "apple_user_given_name")
+            userDefaults.removeObject(forKey: "apple_user_family_name")
+        }
+
         user = nil
         isSignedIn = false
     }
@@ -202,10 +221,22 @@ class AuthenticationManager {
     }
 
     nonisolated private func checkAuthenticationStatus() {
-        if let googleUser = GIDSignIn.sharedInstance.currentUser {
-            let appUser = AppUser(from: googleUser)
+        // Check for Google user if Google login is enabled
+        if FeatureFlags.isGoogleLoginEnabled {
+            if let googleUser = GIDSignIn.sharedInstance.currentUser {
+                let appUser = AppUser(from: googleUser)
+                Task { @MainActor in
+                    self.user = appUser
+                    self.isSignedIn = true
+                }
+                return
+            }
+        }
+
+        // Check for stored Apple user
+        if let storedAppleUser = getStoredAppleUserInfo() {
             Task { @MainActor in
-                self.user = appUser
+                self.user = storedAppleUser
                 self.isSignedIn = true
             }
         }
@@ -226,7 +257,7 @@ class AuthenticationManager {
 
     // MARK: - Apple User Info Helpers
 
-    func getStoredAppleUserInfo() -> AppUser? {
+    nonisolated func getStoredAppleUserInfo() -> AppUser? {
         let userDefaults = UserDefaults.standard
 
         // Check if we have stored Apple user data

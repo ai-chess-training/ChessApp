@@ -44,7 +44,7 @@ struct UserProfileView: View {
                     }
                 } else {
                     // Guest user - show Sign In
-                    Button("Sign In with Google") {
+                    Button("Sign In") {
                         authManager.signOut() // Reset to show login screen
                     }
                 }

@@ -57,8 +57,10 @@ struct SignInSection: View {
                 authManager.signInWithApple()
             }
 
-            GoogleSignInButton {
-                authManager.signInWithGoogle()
+            if FeatureFlags.isGoogleLoginEnabled {
+                GoogleSignInButton {
+                    authManager.signInWithGoogle()
+                }
             }
 
             Text("Or continue as guest")
