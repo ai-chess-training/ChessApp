@@ -53,6 +53,7 @@
 			isa = PBXGroup;
 			children = (
 				2667CDC32E6B0ECC00DCCA61 /* ChessApp */,
+				2698295A2E82B29600FD939B /* Frameworks */,
 				2667CDC22E6B0ECC00DCCA61 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -63,6 +64,13 @@
 				2667CDC12E6B0ECC00DCCA61 /* ChessApp.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		2698295A2E82B29600FD939B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -285,7 +293,6 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ChessApp/Info.plist;
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "Please allow to use Face ID to login to this app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -296,7 +303,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = cwang.ChessApp;
+				PRODUCT_BUNDLE_IDENTIFIER = cwang.ChessMentor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = minimal;
@@ -317,7 +324,6 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ChessApp/Info.plist;
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "Please allow to use Face ID to login to this app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -328,7 +334,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = cwang.ChessApp;
+				PRODUCT_BUNDLE_IDENTIFIER = cwang.ChessMentor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
