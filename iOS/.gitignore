@@ -97,6 +97,8 @@ iOSInjectionProject/
 **/*.xcworkspace/xcuserdata/
 **/xcuserdata/
 xcuserdata/
+**/xcdebugger/
+xcdebugger/
 
 # macOS
 .DS_Store

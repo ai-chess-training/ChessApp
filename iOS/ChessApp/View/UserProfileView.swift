@@ -12,10 +12,10 @@ struct UserProfileView: View {
     let gameState: ChessGameState
     @State private var showingSignOutAlert = false
     @State private var showingSettings = false
-    
+
     var body: some View {
         HStack {
-            // Profile image placeholder or user initial
+            // Profile image with user initial
             Circle()
                 .fill(Color.blue.gradient)
                 .frame(width: 40, height: 40)
@@ -30,12 +30,6 @@ struct UserProfileView: View {
                 Text(authManager.userName)
                     .font(.headline)
                     .foregroundColor(.primary)
-                
-                if !authManager.userEmail.isEmpty {
-                    Text(authManager.userEmail)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
             }
             
             Menu {
