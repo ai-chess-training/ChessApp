@@ -8,6 +8,7 @@
 
 import Foundation
 import GoogleSignIn
+import AuthenticationServices
 
 /// Protocol that abstracts UI presentation for authentication
 /// This allows the AuthenticationManager to remain UI-agnostic
@@ -16,6 +17,10 @@ protocol AuthenticationUIProvider: AnyObject {
     /// Present the Google Sign-In flow
     /// - Parameter completion: Called when sign-in completes with result or error
     func presentGoogleSignIn(completion: @escaping (Result<GIDGoogleUser, Error>) -> Void)
+
+    /// Present the Apple Sign-In flow
+    /// - Parameter completion: Called when sign-in completes with result or error
+    func presentAppleSignIn(completion: @escaping (Result<ASAuthorization, Error>) -> Void)
 
     /// Present an error alert to the user
     /// - Parameter message: The error message to display

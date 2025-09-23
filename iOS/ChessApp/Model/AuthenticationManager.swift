@@ -7,18 +7,27 @@
 
 import Foundation
 import GoogleSignIn
+import AuthenticationServices
 
 struct AppUser: Sendable {
     let name: String
     let email: String
     let imageURL: String?
     let isGuest: Bool
+    let authProvider: AuthProvider
 
-    init(name: String, email: String, imageURL: String?, isGuest: Bool) {
+    enum AuthProvider: String, Sendable {
+        case google = "google"
+        case apple = "apple"
+        case guest = "guest"
+    }
+
+    init(name: String, email: String, imageURL: String?, isGuest: Bool, authProvider: AuthProvider = .guest) {
         self.name = name
         self.email = email
         self.imageURL = imageURL
         self.isGuest = isGuest
+        self.authProvider = authProvider
     }
 
     init(from googleUser: GIDGoogleUser) {
@@ -26,9 +35,33 @@ struct AppUser: Sendable {
         self.email = googleUser.profile?.email ?? ""
         self.imageURL = googleUser.profile?.imageURL(withDimension: 100)?.absoluteString
         self.isGuest = false
+        self.authProvider = .google
     }
 
-    static let guest = AppUser(name: "Guest", email: "", imageURL: nil, isGuest: true)
+    init(from appleIDCredential: ASAuthorizationAppleIDCredential) {
+
+        let fullName = appleIDCredential.fullName
+        let displayName: String
+
+        if let givenName = fullName?.givenName, let familyName = fullName?.familyName {
+            displayName = "\(givenName) \(familyName)"
+        } else if let givenName = fullName?.givenName {
+            displayName = givenName
+        } else if let email = appleIDCredential.email, !email.isEmpty {
+            displayName = email
+        } else {
+            displayName = "Apple User"
+        }
+
+
+        self.name = displayName
+        self.email = appleIDCredential.email ?? ""
+        self.imageURL = nil // Apple doesn't provide profile images
+        self.isGuest = false
+        self.authProvider = .apple
+    }
+
+    static let guest = AppUser(name: "Guest", email: "", imageURL: nil, isGuest: true, authProvider: .guest)
 }
 
 @MainActor @Observable
@@ -67,7 +100,7 @@ class AuthenticationManager {
         }
     }
 
-    func signIn() {
+    func signInWithGoogle() {
         guard let uiProvider = uiProvider else {
             self.errorMessage = AuthenticationError.noUIProvider.localizedDescription
             return
@@ -88,6 +121,71 @@ class AuthenticationManager {
                 self.isSignedIn = false
             }
         }
+    }
+
+    func signInWithApple() {
+        guard let uiProvider = uiProvider else {
+            self.errorMessage = AuthenticationError.noUIProvider.localizedDescription
+            return
+        }
+
+        uiProvider.presentAppleSignIn { [weak self] result in
+            guard let self = self else { return }
+
+            switch result {
+            case .success(let authorization):
+                if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+
+                    // Store Apple user info (important: only available on first sign-in)
+                    self.storeAppleUserInfo(appleIDCredential)
+
+                    // Try to use stored data first, then fall back to credential data
+                    var appUser = AppUser(from: appleIDCredential)
+
+                    // If the credential doesn't have name/email (subsequent sign-ins), use stored data
+                    if appUser.name == "Apple User", let storedUser = self.getStoredAppleUserInfo() {
+                        appUser = storedUser
+                    }
+
+
+                    self.user = appUser
+                    self.isSignedIn = true
+                    self.errorMessage = nil
+                } else {
+                    self.errorMessage = "Invalid Apple ID credential"
+                    self.isSignedIn = false
+                }
+
+            case .failure(let error):
+                self.errorMessage = error.localizedDescription
+                self.isSignedIn = false
+            }
+        }
+    }
+
+    private func storeAppleUserInfo(_ credential: ASAuthorizationAppleIDCredential) {
+        let userDefaults = UserDefaults.standard
+
+
+        // Always store the user ID
+        userDefaults.set(credential.user, forKey: "apple_user_id")
+
+        // Store email and name if provided (first sign-in only)
+        if let email = credential.email, !email.isEmpty {
+            userDefaults.set(email, forKey: "apple_user_email")
+        } else {
+        }
+
+        if let fullName = credential.fullName {
+            if let givenName = fullName.givenName {
+                userDefaults.set(givenName, forKey: "apple_user_given_name")
+            }
+            if let familyName = fullName.familyName {
+                userDefaults.set(familyName, forKey: "apple_user_family_name")
+            }
+        } else {
+        }
+
     }
 
 
@@ -124,5 +222,42 @@ class AuthenticationManager {
 
     var userProfileImageURL: String? {
         return user?.imageURL
+    }
+
+    // MARK: - Apple User Info Helpers
+
+    func getStoredAppleUserInfo() -> AppUser? {
+        let userDefaults = UserDefaults.standard
+
+        // Check if we have stored Apple user data
+        guard userDefaults.string(forKey: "apple_user_id") != nil else {
+            return nil
+        }
+
+        let email = userDefaults.string(forKey: "apple_user_email") ?? ""
+        let givenName = userDefaults.string(forKey: "apple_user_given_name")
+        let familyName = userDefaults.string(forKey: "apple_user_family_name")
+
+        // Construct full name
+        let fullName: String
+        if let given = givenName, let family = familyName {
+            fullName = "\(given) \(family)"
+        } else if let given = givenName {
+            fullName = given
+        } else {
+            fullName = email.isEmpty ? "Apple User" : email
+        }
+
+        return AppUser(
+            name: fullName,
+            email: email,
+            imageURL: nil, // Apple doesn't provide profile images
+            isGuest: false,
+            authProvider: .apple
+        )
+    }
+
+    func getAppleUserUniqueID() -> String? {
+        return UserDefaults.standard.string(forKey: "apple_user_id")
     }
 }
