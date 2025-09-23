@@ -53,23 +53,9 @@ struct SignInSection: View {
                     .cornerRadius(8)
             }
 
-            // Apple Sign-In Button
-            Button(action: {
+            AppleSignInButton {
                 authManager.signInWithApple()
-            }) {
-                HStack {
-                    Image(systemName: "applelogo")
-                        .foregroundColor(.white)
-
-                    Text("Sign in with Apple")
-                        .foregroundColor(.white)
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.black)
-                .cornerRadius(8)
             }
-            .buttonStyle(.plain)
 
             GoogleSignInButton {
                 authManager.signInWithGoogle()
@@ -91,6 +77,27 @@ struct SignInSection: View {
             .foregroundColor(.secondary)
             .multilineTextAlignment(.center)
             .padding(.horizontal)
+    }
+}
+
+struct AppleSignInButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: "applelogo")
+                    .foregroundColor(.white)
+
+                Text("Sign in with Apple")
+                    .foregroundColor(.white)
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.black)
+            .cornerRadius(8)
+        }
+        .buttonStyle(.plain)
     }
 }
 
