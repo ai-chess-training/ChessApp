@@ -109,6 +109,17 @@ class AuthenticationManager {
                 self.isSignedIn = true
                 self.errorMessage = nil
 
+                // Track successful Google sign in
+                Task {
+                    await AnalyticsManager.shared.identifyUser(appUser.email)
+                    await AnalyticsManager.shared.trackUserSignIn(provider: .google)
+                    await AnalyticsManager.shared.setUserProperties([
+                        "name": appUser.name,
+                        "email": appUser.email,
+                        "auth_provider": "google"
+                    ])
+                }
+
             case .failure(let error):
                 self.errorMessage = error.localizedDescription
                 self.isSignedIn = false
@@ -144,6 +155,17 @@ class AuthenticationManager {
                     self.user = appUser
                     self.isSignedIn = true
                     self.errorMessage = nil
+
+                    // Track successful sign in
+                    Task {
+                        await AnalyticsManager.shared.identifyUser(appUser.email.isEmpty ? "apple_\(appleIDCredential.user)" : appUser.email)
+                        await AnalyticsManager.shared.trackUserSignIn(provider: .apple)
+                        await AnalyticsManager.shared.setUserProperties([
+                            "name": appUser.name,
+                            "email": appUser.email,
+                            "auth_provider": "apple"
+                        ])
+                    }
                 } else {
                     self.errorMessage = "Invalid Apple ID credential"
                     self.isSignedIn = false
@@ -196,6 +218,11 @@ class AuthenticationManager {
 
 
     func signOut() {
+        // Track sign out before clearing user data
+        Task {
+            await AnalyticsManager.shared.trackUserSignOut()
+        }
+
         // Sign out from Google if enabled and user is signed in with Google
         if FeatureFlags.isGoogleLoginEnabled && user?.authProvider == .google {
             GIDSignIn.sharedInstance.signOut()
@@ -218,6 +245,16 @@ class AuthenticationManager {
         user = .guest
         isSignedIn = true
         errorMessage = nil
+
+        // Track guest sign in
+        Task {
+            await AnalyticsManager.shared.identifyUser("guest_user")
+            await AnalyticsManager.shared.trackUserSignIn(provider: .guest)
+            await AnalyticsManager.shared.setUserProperties([
+                "name": "Guest",
+                "auth_provider": "guest"
+            ])
+        }
     }
 
     nonisolated private func checkAuthenticationStatus() {

@@ -110,6 +110,11 @@ class ChessGameState: @unchecked Sendable {
         board = Array(repeating: Array(repeating: nil, count: 8), count: 8)
         currentPlayer = .white
         gameStatus = .inProgress
+
+        // Track game start
+        Task {
+            await AnalyticsManager.shared.trackGameStarted(mode: gameMode, skillLevel: skillLevel)
+        }
         capturedPieces = []
         moveHistory = []
         moveCount = 0
@@ -287,11 +292,26 @@ class ChessGameState: @unchecked Sendable {
         guard let ruleEngine = ruleEngine else { return }
 
         if ruleEngine.isCheckmate(color: currentPlayer, gameState: self) {
-            gameStatus = .checkmate(winner: currentPlayer == .white ? .black : .white)
+            let winner = currentPlayer == .white ? ChessColor.black : ChessColor.white
+            gameStatus = .checkmate(winner: winner)
             checkmateTrigger.toggle()
+
+            // Track game end
+            let duration = gameStartTime.map { Date().timeIntervalSince($0) } ?? 0
+            Task {
+                await AnalyticsManager.shared.trackGameEnded(winner: winner, moveCount: moveCount, duration: duration)
+            }
+
         } else if ruleEngine.isStalemate(color: currentPlayer, gameState: self) {
             gameStatus = .stalemate
             stalemateTrigger.toggle()
+
+            // Track stalemate
+            let duration = gameStartTime.map { Date().timeIntervalSince($0) } ?? 0
+            Task {
+                await AnalyticsManager.shared.trackGameEnded(winner: nil, moveCount: moveCount, duration: duration)
+            }
+
         } else {
             gameStatus = .inProgress
             // Check if current player is in check
@@ -511,6 +531,11 @@ class ChessGameState: @unchecked Sendable {
         skillLevel = newLevel
 
         Logger.debug("Updating skill level from \(previousLevel.displayName) to \(newLevel.displayName)", category: Logger.coaching)
+
+        // Track skill level change
+        Task {
+            await AnalyticsManager.shared.trackSkillLevelChanged(from: previousLevel, to: newLevel)
+        }
 
         // Only recreate session if level actually changed
         if previousLevel != newLevel {
