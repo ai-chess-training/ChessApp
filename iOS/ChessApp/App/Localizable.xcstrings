@@ -157,7 +157,7 @@
     "Chess Coach API" : {
 
     },
-    "ChessApp" : {
+    "Chess Mentor" : {
 
     },
     "Choose a piece to promote to:" : {
@@ -295,6 +295,9 @@
     "Enter OpenAI API key" : {
 
     },
+    "Game Board" : {
+
+    },
     "Game Controls" : {
       "comment" : "Navigation title for game controls section",
       "extractionState" : "manual",
@@ -320,9 +323,6 @@
       }
     },
     "Game Mode" : {
-
-    },
-    "Game One" : {
 
     },
     "http://localhost:8000" : {
@@ -412,9 +412,6 @@
         }
       }
     },
-    "Or continue as guest" : {
-
-    },
     "Pawn Promotion" : {
       "comment" : "Title for pawn promotion dialog",
       "extractionState" : "manual",
@@ -439,7 +436,7 @@
         }
       }
     },
-    "Play chess with friends around the world" : {
+    "Play chess with the best mentor in the world!" : {
 
     },
     "Practice Suggestions" : {
@@ -523,7 +520,7 @@
     "Sign In" : {
 
     },
-    "Sign in to save your games and track your progress" : {
+    "Sign in to track your progress." : {
 
     },
     "Sign in with Apple" : {

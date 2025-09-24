@@ -79,7 +79,7 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text(String(localized: "Game One"))
+                    Text(String(localized: "Game Board"))
                         .font(.headline)
                         .fontWeight(.semibold)
                 }
