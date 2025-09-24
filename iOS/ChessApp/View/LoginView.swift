@@ -19,11 +19,11 @@ struct LoginView: View {
                     .font(.system(size: 80))
                     .foregroundColor(.blue)
                 
-                Text("ChessApp")
+                Text("Chess Mentor")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 
-                Text("Play chess with friends around the world")
+                Text("Play chess with the best mentor in the world!")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -56,24 +56,24 @@ struct SignInSection: View {
             AppleSignInButton {
                 authManager.signInWithApple()
             }
+            .padding()
 
-            GoogleSignInButton {
-                authManager.signInWithGoogle()
+            if FeatureFlags.isGoogleLoginEnabled {
+                GoogleSignInButton {
+                    authManager.signInWithGoogle()
+                }
+                .padding()
             }
 
-            Text("Or continue as guest")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            Button("Continue as Guest") {
+            GuestSignInButton {
                 authManager.signInAsGuest()
             }
-            .buttonStyle(.bordered)
+            .padding()
         }
+        .frame(maxWidth: 500)
         .padding()
 
-        Text("Sign in to save your games and track your progress")
-            .font(.caption)
+        Text("Sign in to track your progress.")
             .foregroundColor(.secondary)
             .multilineTextAlignment(.center)
             .padding(.horizontal)
@@ -87,14 +87,16 @@ struct AppleSignInButton: View {
         Button(action: action) {
             HStack {
                 Image(systemName: "applelogo")
-                    .foregroundColor(.white)
+                    .font(.system(size: 18, weight: .medium))
 
                 Text("Sign in with Apple")
-                    .foregroundColor(.white)
+                    .font(.system(size: 16, weight: .medium))
             }
             .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.black)
+            .frame(height: 44) // Apple's recommended height
+            .padding(.horizontal, 16)
+            .foregroundColor(Color(.systemBackground))
+            .background(.primary)
             .cornerRadius(8)
         }
         .buttonStyle(.plain)
@@ -103,19 +105,43 @@ struct AppleSignInButton: View {
 
 struct GoogleSignInButton: View {
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack {
-                Image(systemName: "globe")
+                Image(systemName: "globe")//If enable G login, need change the icon
                     .foregroundColor(.blue)
-                
+
                 Text("Sign in with Google")
                     .foregroundColor(.primary)
             }
             .frame(maxWidth: .infinity)
-            .padding()
+            .frame(height: 44)
             .background(Color(.systemBackground))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct GuestSignInButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: "person")
+                    .foregroundColor(.secondary)
+
+                Text("Continue as Guest")
+                    .foregroundColor(.primary)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 44)
+            .background(Color(.systemGray6))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)

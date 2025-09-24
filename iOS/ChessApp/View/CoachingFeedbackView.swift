@@ -24,71 +24,40 @@ struct CoachingFeedbackView: View {
 
                 Spacer()
 
-                // Coaching toggle
-                Toggle("", isOn: Binding(
-                    get: { gameState.isCoachingEnabled },
-                    set: { isEnabled in
-                        if isEnabled {
-                            gameState.enableCoaching(skillLevel: gameState.skillLevel)
-                        } else {
-                            gameState.disableCoaching()
-                        }
-                    }
-                ))
-                .labelsHidden()
             }
 
-            if gameState.isCoachingEnabled {
-                // Skill level picker
-                skillLevelPicker
+            // Skill level picker (coaching is always enabled)
+            skillLevelPicker
 
-                // Analysis status with enhanced UI
-                if gameState.isAnalyzingMove {
-                    analysisStatusView(
-                        icon: "brain",
-                        title: "Analyzing move...",
-                        subtitle: "Chess Coach is reviewing your move",
-                        color: .blue
-                    )
-                } else if gameState.chessCoachAPI.currentSessionId == nil && gameState.isCoachingEnabled {
-                    analysisStatusView(
-                        icon: "cpu",
-                        title: "Creating session...",
-                        subtitle: "Setting up coaching session",
-                        color: .orange
-                    )
-                }
-
-                // Move feedback
-                if let feedback = gameState.currentMoveFeedback {
-                    feedbackContent(feedback)
-                } else if !gameState.isAnalyzingMove {
-                    if gameState.coachingDisabledByUndo {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Image(systemName: "exclamationmark.triangle")
-                                    .foregroundColor(.orange)
-                                Text("Coaching disabled")
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.orange)
-                            }
-                            Text("Game state is out of sync due to undo operation. Toggle coaching off and on again to resume.")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.vertical, 4)
-                    } else {
-                        Text("Make a move to receive coaching feedback")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .italic()
-                    }
-                }
-
-                // API connection status
-                connectionStatus
+            // Analysis status with enhanced UI
+            if gameState.isAnalyzingMove {
+                analysisStatusView(
+                    icon: "brain",
+                    title: "Analyzing move...",
+                    subtitle: "Chess Coach is reviewing your move",
+                    color: .blue
+                )
+            } else if gameState.chessCoachAPI.currentSessionId == nil {
+                analysisStatusView(
+                    icon: "cpu",
+                    title: "Creating session...",
+                    subtitle: "Setting up coaching session",
+                    color: .orange
+                )
             }
+
+            // Move feedback
+            if let feedback = gameState.currentMoveFeedback {
+                feedbackContent(feedback)
+            } else if !gameState.isAnalyzingMove {
+                Text("Make a move to receive coaching feedback")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .italic()
+            }
+
+            // API connection status
+            connectionStatus
         }
         .padding()
         .background(Color(.systemGray6))
@@ -147,8 +116,8 @@ struct CoachingFeedbackView: View {
     // MARK: - Skill Level Change Handling
 
     private func handleSkillLevelChange(to newLevel: SkillLevel) {
-        // Check if coaching is enabled and game is in progress
-        if gameState.isCoachingEnabled && gameState.moveCount > 0 && newLevel != gameState.skillLevel {
+        // Check if game is in progress
+        if gameState.moveCount > 0 && newLevel != gameState.skillLevel {
             Logger.debug("Skill level change with game in progress - showing warning", category: Logger.ui)
             pendingSkillLevel = newLevel
             showingSkillLevelAlert = true
@@ -406,7 +375,6 @@ struct DrillsView: View {
     VStack {
         CoachingFeedbackView(gameState: {
             let state = ChessGameState()
-            state.isCoachingEnabled = true
             state.currentMoveFeedback = MoveFeedback(
                 moveNo: 1,
                 side: "white",

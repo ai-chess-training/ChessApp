@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {
-
-    },
     "%@:" : {
 
     },
@@ -20,9 +17,6 @@
 
     },
     "Are you sure you want to sign out?" : {
-
-    },
-    "Are you sure you want to undo the last move?" : {
 
     },
     "Best line: %@" : {
@@ -163,7 +157,7 @@
     "Chess Coach API" : {
 
     },
-    "ChessApp" : {
+    "Chess Mentor" : {
 
     },
     "Choose a piece to promote to:" : {
@@ -193,16 +187,10 @@
     "Coaching Defaults" : {
 
     },
-    "Coaching disabled" : {
-
-    },
     "Concepts" : {
 
     },
     "Configure the Chess Coach backend server connection. Use localhost for local development or your Mac's IP address for testing on device." : {
-
-    },
-    "Confirm Undo" : {
 
     },
     "Connected" : {
@@ -307,6 +295,9 @@
     "Enter OpenAI API key" : {
 
     },
+    "Game Board" : {
+
+    },
     "Game Controls" : {
       "comment" : "Navigation title for game controls section",
       "extractionState" : "manual",
@@ -332,12 +323,6 @@
       }
     },
     "Game Mode" : {
-
-    },
-    "Game One" : {
-
-    },
-    "Game state is out of sync due to undo operation. Toggle coaching off and on again to resume." : {
 
     },
     "http://localhost:8000" : {
@@ -427,9 +412,6 @@
         }
       }
     },
-    "Or continue as guest" : {
-
-    },
     "Pawn Promotion" : {
       "comment" : "Title for pawn promotion dialog",
       "extractionState" : "manual",
@@ -454,7 +436,7 @@
         }
       }
     },
-    "Play chess with friends around the world" : {
+    "Play chess with the best mentor in the world!" : {
 
     },
     "Practice Suggestions" : {
@@ -535,16 +517,16 @@
     "Show Move History" : {
 
     },
-    "Sign in to save your games and track your progress" : {
+    "Sign In" : {
+
+    },
+    "Sign in to track your progress." : {
 
     },
     "Sign in with Apple" : {
 
     },
     "Sign in with Google" : {
-
-    },
-    "Sign In with Google" : {
 
     },
     "Sign Out" : {
@@ -612,12 +594,6 @@
           }
         }
       }
-    },
-    "Undo Move" : {
-
-    },
-    "Undoing a move will disable coaching because the game state will be out of sync with the server." : {
-
     }
   },
   "version" : "1.0"

@@ -48,13 +48,11 @@ class ChessGameState: @unchecked Sendable {
 
     // MARK: - Game Mode and Chess Coach API Integration
 
-    var gameMode: GameMode = .humanVsHuman
+    var gameMode: GameMode = .humanVsMachine // default to play with Engine, and only allow this for now.
     var chessCoachAPI: ChessCoachAPI
-    var isCoachingEnabled: Bool = false
     var currentMoveFeedback: MoveFeedback?
     var isAnalyzingMove: Bool = false
     var skillLevel: SkillLevel = .intermediate
-    var coachingDisabledByUndo: Bool = false
     var isWaitingForEngineMove: Bool = false
     
     // Chess rules engine and move history
@@ -93,10 +91,14 @@ class ChessGameState: @unchecked Sendable {
             skillLevel = level
         }
 
-        isCoachingEnabled = UserDefaults.standard.bool(forKey: "ChessCoach.enabledByDefault")
         isDebugMode = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
 
         setupInitialBoard()
+
+        // Start coaching session automatically since coaching is always enabled
+        Task {
+            await startNewCoachingSession()
+        }
     }
     
     func setCurrentUser(_ userName: String) {
@@ -269,7 +271,7 @@ class ChessGameState: @unchecked Sendable {
         currentPlayer = currentPlayer == .white ? .black : .white
 
         // Analyze the move if coaching is enabled (but not for engine moves)
-        if isCoachingEnabled && !isWaitingForEngineMove {
+        if !isWaitingForEngineMove {
             Task {
                 await analyzeLastMove(for: movingPlayer)
             }
@@ -415,13 +417,6 @@ class ChessGameState: @unchecked Sendable {
         // Clear selection
         selectedSquare = nil
 
-        // Disable coaching if it was enabled (game state is now out of sync with server)
-        if isCoachingEnabled {
-            disableCoaching()
-            coachingDisabledByUndo = true
-            Logger.debug("Coaching disabled due to undo operation", category: Logger.coaching)
-        }
-
         return true
     }
     
@@ -480,8 +475,6 @@ class ChessGameState: @unchecked Sendable {
     func enableCoaching(skillLevel: SkillLevel = .intermediate) {
         Logger.debug("enableCoaching called with skill level: \(skillLevel.displayName)", category: Logger.coaching)
         self.skillLevel = skillLevel
-        isCoachingEnabled = true
-        coachingDisabledByUndo = false
 
         // Create session if we don't have one
         if chessCoachAPI.currentSessionId == nil {
@@ -494,19 +487,14 @@ class ChessGameState: @unchecked Sendable {
         }
     }
 
-    func disableCoaching() {
-        isCoachingEnabled = false
-        currentMoveFeedback = nil
-    }
-
     func updateGameMode(_ newMode: GameMode) {
         let previousMode = gameMode
         gameMode = newMode
 
         Logger.debug("Updating game mode from \(previousMode.displayName) to \(newMode.displayName)", category: Logger.coaching)
 
-        // Only recreate session if coaching is enabled and mode actually changed
-        if isCoachingEnabled && previousMode != newMode {
+        // Only recreate session if mode actually changed
+        if previousMode != newMode {
             Logger.debug("Game mode change detected, recreating session...", category: Logger.coaching)
             Task {
                 await startNewCoachingSession()
@@ -524,8 +512,8 @@ class ChessGameState: @unchecked Sendable {
 
         Logger.debug("Updating skill level from \(previousLevel.displayName) to \(newLevel.displayName)", category: Logger.coaching)
 
-        // Only recreate session if coaching is enabled and level actually changed
-        if isCoachingEnabled && previousLevel != newLevel {
+        // Only recreate session if level actually changed
+        if previousLevel != newLevel {
             Logger.debug("Skill level change detected, resetting board and recreating session...", category: Logger.coaching)
 
             // Reset the board first to sync with new session
@@ -562,10 +550,6 @@ class ChessGameState: @unchecked Sendable {
     func analyzeLastMove(for movingPlayer: ChessColor) async {
         Logger.debug("analyzeLastMove called for: \(movingPlayer == .white ? "White" : "Black")", category: Logger.coaching)
 
-        guard isCoachingEnabled else {
-            Logger.debug("Coaching not enabled", category: Logger.coaching)
-            return
-        }
 
         guard let lastMoveRecord = moveHistoryManager.getLastMove() else {
             Logger.debug("No last move record found", category: Logger.coaching)
@@ -738,7 +722,6 @@ class ChessGameState: @unchecked Sendable {
             skillLevel = level
         }
 
-        isCoachingEnabled = UserDefaults.standard.bool(forKey: "ChessCoach.enabledByDefault")
         isDebugMode = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
     }
 }

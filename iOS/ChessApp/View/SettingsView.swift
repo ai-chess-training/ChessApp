@@ -13,7 +13,7 @@ struct SettingsView: View {
     @State private var apiBaseURL: String = "http://localhost:8000"
     @State private var apiKey: String = ""
     @State private var defaultSkillLevel: SkillLevel = .intermediate
-    @State private var enableCoachingByDefault: Bool = false
+    @State private var enableCoachingByDefault: Bool = true
     @State private var shouldShowHistory: Bool = false
     @State private var showingResetAlert = false
     @State private var testingConnection = false
@@ -202,7 +202,7 @@ struct SettingsView: View {
         apiBaseURL = "http://localhost:8000"
         apiKey = ""
         defaultSkillLevel = .intermediate
-        enableCoachingByDefault = false
+        enableCoachingByDefault = true
         shouldShowHistory = false
         connectionResult = nil
 
