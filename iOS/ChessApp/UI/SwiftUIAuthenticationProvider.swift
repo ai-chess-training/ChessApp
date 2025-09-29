@@ -62,7 +62,7 @@ class SwiftUIAuthenticationProvider: NSObject, AuthenticationUIProvider {
     func presentError(_ message: String) {
         Task {
             guard let rootViewController = await getRootViewController() else {
-                Logger.error("Cannot present error alert: no root view controller", category: Logger.ui)
+                logError("Cannot present error alert: no root view controller", category: .ui)
                 return
             }
 
@@ -84,7 +84,7 @@ class SwiftUIAuthenticationProvider: NSObject, AuthenticationUIProvider {
         await MainActor.run {
             guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                   let window = windowScene.windows.first else {
-                Logger.error("Cannot find root view controller", category: Logger.ui)
+                logError("Cannot find root view controller", category: .ui)
                 return nil
             }
             return window.rootViewController

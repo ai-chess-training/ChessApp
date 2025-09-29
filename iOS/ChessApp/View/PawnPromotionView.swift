@@ -60,10 +60,10 @@ struct PawnPromotionView: View {
     PawnPromotionView(
         color: .white,
         onSelection: { piece in
-            Logger.debug("Pawn promotion selected: \(piece)", category: Logger.ui)
+            logDebug("Pawn promotion selected: \(piece)", category: .ui)
         },
         onCancel: {
-            Logger.debug("Pawn promotion cancelled", category: Logger.ui)
+            logDebug("Pawn promotion cancelled", category: .ui)
         }
     )
     .padding()

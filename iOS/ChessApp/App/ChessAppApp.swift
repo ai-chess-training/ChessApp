@@ -11,6 +11,13 @@ import SwiftUI
 struct ChessAppApp: App {
     @State private var authManager = AuthenticationManager()
 
+    init() {
+        if FeatureFlags.isAnalyticsEnabled {
+            // Initialize analytics on app launch
+            _ = AnalyticsManager.shared
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             if authManager.isSignedIn {

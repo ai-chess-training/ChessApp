@@ -100,5 +100,17 @@ xcuserdata/
 **/xcdebugger/
 xcdebugger/
 
+# Xcode Debugger (Personal Breakpoints)
+**/Breakpoints_v2.xcbkptlist
+Breakpoints_v2.xcbkptlist
+
 # macOS
 .DS_Store
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.development
+.env.production
+Config/Secrets.swift
+**/Secrets.swift

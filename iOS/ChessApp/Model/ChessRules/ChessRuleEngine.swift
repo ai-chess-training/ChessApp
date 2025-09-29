@@ -127,7 +127,7 @@ class ChessRuleEngine {
             let move = ChessMove(from: position, to: to, piece: piece, capturedPiece: destinationPiece)
             let wouldLeaveInCheck = wouldLeaveKingInCheck(move: move, gameState: gameState)
             if wouldLeaveInCheck {
-                Logger.debug("Move to (\(to.row), \(to.col)) would leave king in check", category: Logger.game)
+                logDebug("Move to (\(to.row), \(to.col)) would leave king in check", category: .game)
             }
             return !wouldLeaveInCheck
         }
