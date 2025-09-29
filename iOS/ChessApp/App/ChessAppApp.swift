@@ -12,8 +12,10 @@ struct ChessAppApp: App {
     @State private var authManager = AuthenticationManager()
 
     init() {
-        // Initialize analytics on app launch
-        _ = AnalyticsManager.shared
+        if FeatureFlags.isAnalyticsEnabled {
+            // Initialize analytics on app launch
+            _ = AnalyticsManager.shared
+        }
     }
 
     var body: some Scene {
