@@ -112,6 +112,7 @@ class AuthenticationManager {
                 // Track successful Google sign in
                 Task {
                     await AnalyticsManager.shared.identifyUser(appUser.email)
+                    
                     await AnalyticsManager.shared.trackUserSignIn(provider: .google)
                     await AnalyticsManager.shared.setUserProperties([
                         "name": appUser.name,

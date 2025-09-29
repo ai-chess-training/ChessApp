@@ -190,9 +190,9 @@ class ChessCoachAPI: @unchecked Sendable {
         } catch {
             isConnected = false
             lastError = error.localizedDescription
-            Logger.error("Session creation failed", category: Logger.api)
-            Logger.error("URL: \(components.url?.absoluteString ?? "invalid")", category: Logger.api)
-            Logger.error("Error: \(error)", category: Logger.api)
+            logError("Session creation failed", category: .api)
+            logError("URL: \(components.url?.absoluteString ?? "invalid")", category: .api)
+            logError("Error: \(error)", category: .api)
             throw error
         }
     }
@@ -224,14 +224,14 @@ class ChessCoachAPI: @unchecked Sendable {
         if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 400 {
             if let errorMessage = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let detail = errorMessage["detail"] as? String {
-                Logger.error("API Error 400: \(detail)", category: Logger.api)
+                logError("API Error 400: \(detail)", category: .api)
                 throw APIError.badRequest
             }
         }
 
         // Debug: Print successful responses
         if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-            Logger.debug("API Success 200: Move analysis received", category: Logger.api)
+            logDebug("API Success 200: Move analysis received", category: .api)
         }
 
         try validateResponse(response)
@@ -257,14 +257,14 @@ class ChessCoachAPI: @unchecked Sendable {
     }
 
     func startNewGame(skillLevel: SkillLevel = .intermediate, gameMode: String = "training") async throws -> SessionResponse {
-        Logger.debug("Starting new game, clearing session...", category: Logger.api)
+        logDebug("Starting new game, clearing session...", category: .api)
         currentSessionId = nil
 
-        Logger.debug("Creating new session...", category: Logger.api)
+        logDebug("Creating new session...", category: .api)
         let sessionResponse = try await createSession(skillLevel: skillLevel, gameMode: gameMode)
 
-        Logger.info("Session created successfully: \(sessionResponse.sessionId)", category: Logger.api)
-        Logger.debug("Game mode: \(gameMode)", category: Logger.api)
+        logInfo("Session created successfully: \(sessionResponse.sessionId)", category: .api)
+        logDebug("Game mode: \(gameMode)", category: .api)
         return sessionResponse
     }
 

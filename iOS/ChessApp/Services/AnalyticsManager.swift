@@ -14,10 +14,6 @@ actor AnalyticsManager {
     private var mixpanel: MixpanelInstance?
 
     private init() {
-        setupMixpanel()
-    }
-
-    private func setupMixpanel() {
         #if DEBUG
         // Use a different project token for debug builds if needed
         let token = "YOUR_DEBUG_MIXPANEL_TOKEN"
@@ -25,30 +21,32 @@ actor AnalyticsManager {
         let token = "YOUR_PRODUCTION_MIXPANEL_TOKEN"
         #endif
 
-        mixpanel = Mixpanel.initialize(
+        // Initialize Mixpanel and get the main instance
+        Mixpanel.initialize(
             token: token,
             trackAutomaticEvents: false // We'll track events manually
         )
+        mixpanel = Mixpanel.mainInstance()
 
-        Logger.debug("Mixpanel initialized", category: Logger.analytics)
+        logDebug("Mixpanel initialized", category: .analytics)
     }
 
     // MARK: - User Management
 
     func identifyUser(_ userId: String) {
         mixpanel?.identify(distinctId: userId)
-        Logger.debug("User identified: \(userId)", category: Logger.analytics)
+        logDebug("User identified: \(userId)", category: .analytics)
     }
 
-    func setUserProperties(_ properties: [String: Any]) {
+    func setUserProperties(_ properties: [String: MixpanelType]) {
         mixpanel?.people.set(properties: properties)
     }
 
     // MARK: - Event Tracking
 
-    func track(event: String, properties: [String: Any] = [:]) {
+    func track(event: String, properties: [String: MixpanelType] = [:]) {
         mixpanel?.track(event: event, properties: properties)
-        Logger.debug("Event tracked: \(event)", category: Logger.analytics)
+        logDebug("Event tracked: \(event)", category: .analytics)
     }
 
     // MARK: - Chess App Specific Events
@@ -69,7 +67,7 @@ actor AnalyticsManager {
         ])
     }
 
-    func trackMoveMade(moveNumber: Int, piece: ChessPieceType, isCapture: Bool) {
+    func trackMoveMade(moveNumber: Int, piece: PieceType, isCapture: Bool) {
         track(event: "Move Made", properties: [
             "move_number": moveNumber,
             "piece_type": piece.rawValue,
@@ -91,7 +89,7 @@ actor AnalyticsManager {
         ])
     }
 
-    func trackUserSignIn(provider: AuthProvider) {
+    func trackUserSignIn(provider: AppUser.AuthProvider) {
         track(event: "User Sign In", properties: [
             "auth_provider": provider.rawValue
         ])
@@ -108,8 +106,4 @@ actor AnalyticsManager {
     }
 }
 
-// MARK: - Logger Extension
 
-extension Logger {
-    static let analytics = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Analytics")
-}

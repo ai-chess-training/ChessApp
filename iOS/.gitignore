@@ -100,5 +100,9 @@ xcuserdata/
 **/xcdebugger/
 xcdebugger/
 
+# Xcode Debugger (Personal Breakpoints)
+**/Breakpoints_v2.xcbkptlist
+Breakpoints_v2.xcbkptlist
+
 # macOS
 .DS_Store
