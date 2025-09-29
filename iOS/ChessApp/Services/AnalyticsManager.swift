@@ -15,55 +15,50 @@ actor AnalyticsManager {
 
     private init() {
         // Get Mixpanel token from environment variables (CI/CD builds) or bundle (local development)
-        let token = getMixpanelToken()
+        var token = ""
+        var tokenSource = ""
 
-        guard !token.isEmpty else {
-            logError("Mixpanel token not configured - analytics disabled", category: .analytics)
-            mixpanel = nil
-            return
-        }
-
-        // Initialize Mixpanel and get the main instance
-        Mixpanel.initialize(
-            token: token,
-            trackAutomaticEvents: false // We'll track events manually
-        )
-        mixpanel = Mixpanel.mainInstance()
-
-        logDebug("Mixpanel initialized with secure token", category: .analytics)
-    }
-
-    // MARK: - Private Token Management
-
-    private func getMixpanelToken() -> String {
         // Priority 1: Environment variables (CI/CD builds)
         #if DEBUG
         if let envToken = ProcessInfo.processInfo.environment["MIXPANEL_DEBUG_TOKEN"], !envToken.isEmpty {
-            logDebug("Using Mixpanel debug token from environment", category: .analytics)
-            return envToken
+            token = envToken
+            tokenSource = "environment (debug)"
         }
         #else
         if let envToken = ProcessInfo.processInfo.environment["MIXPANEL_PROD_TOKEN"], !envToken.isEmpty {
-            logDebug("Using Mixpanel production token from environment", category: .analytics)
-            return envToken
+            token = envToken
+            tokenSource = "environment (production)"
         }
         #endif
 
         // Priority 2: Bundle Info.plist (local development fallback)
-        #if DEBUG
-        if let bundleToken = Bundle.main.object(forInfoDictionaryKey: "MIXPANEL_DEBUG_TOKEN") as? String, !bundleToken.isEmpty {
-            logDebug("Using Mixpanel debug token from bundle", category: .analytics)
-            return bundleToken
+        if token.isEmpty {
+            #if DEBUG
+            if let bundleToken = Bundle.main.object(forInfoDictionaryKey: "MIXPANEL_DEBUG_TOKEN") as? String, !bundleToken.isEmpty {
+                token = bundleToken
+                tokenSource = "bundle (debug)"
+            }
+            #else
+            if let bundleToken = Bundle.main.object(forInfoDictionaryKey: "MIXPANEL_PROD_TOKEN") as? String, !bundleToken.isEmpty {
+                token = bundleToken
+                tokenSource = "bundle (production)"
+            }
+            #endif
         }
-        #else
-        if let bundleToken = Bundle.main.object(forInfoDictionaryKey: "MIXPANEL_PROD_TOKEN") as? String, !bundleToken.isEmpty {
-            logDebug("Using Mixpanel production token from bundle", category: .analytics)
-            return bundleToken
-        }
-        #endif
 
-        logError("No Mixpanel token found in environment or bundle", category: .analytics)
-        return ""
+        // Initialize based on token availability
+        if token.isEmpty {
+            logError("No Mixpanel token found in environment or bundle - analytics disabled", category: .analytics)
+            self.mixpanel = nil
+        } else {
+            // Initialize Mixpanel and get the main instance
+            Mixpanel.initialize(
+                token: token,
+                trackAutomaticEvents: false // We'll track events manually
+            )
+            self.mixpanel = Mixpanel.mainInstance()
+            logDebug("Mixpanel initialized with secure token from \(tokenSource)", category: .analytics)
+        }
     }
 
     // MARK: - User Management
