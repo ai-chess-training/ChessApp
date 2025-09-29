@@ -29,6 +29,7 @@ struct GameControlsView: View {
                 undoTrigger: $undoTrigger,
                 resignTrigger: $resignTrigger
             )
+            .frame(maxWidth: .infinity)
             
             // Move History (Debug Mode Only)
             if gameState.isDebugMode && !gameState.moveHistory.isEmpty {
