@@ -14,12 +14,14 @@ actor AnalyticsManager {
     private var mixpanel: MixpanelInstance?
 
     private init() {
-        #if DEBUG
-        // Use a different project token for debug builds if needed
-        let token = "YOUR_DEBUG_MIXPANEL_TOKEN"
-        #else
-        let token = "YOUR_PRODUCTION_MIXPANEL_TOKEN"
-        #endif
+        // Get Mixpanel token from environment variables (CI/CD builds) or bundle (local development)
+        let token = getMixpanelToken()
+
+        guard !token.isEmpty else {
+            logError("Mixpanel token not configured - analytics disabled", category: .analytics)
+            mixpanel = nil
+            return
+        }
 
         // Initialize Mixpanel and get the main instance
         Mixpanel.initialize(
@@ -28,24 +30,69 @@ actor AnalyticsManager {
         )
         mixpanel = Mixpanel.mainInstance()
 
-        logDebug("Mixpanel initialized", category: .analytics)
+        logDebug("Mixpanel initialized with secure token", category: .analytics)
+    }
+
+    // MARK: - Private Token Management
+
+    private func getMixpanelToken() -> String {
+        // Priority 1: Environment variables (CI/CD builds)
+        #if DEBUG
+        if let envToken = ProcessInfo.processInfo.environment["MIXPANEL_DEBUG_TOKEN"], !envToken.isEmpty {
+            logDebug("Using Mixpanel debug token from environment", category: .analytics)
+            return envToken
+        }
+        #else
+        if let envToken = ProcessInfo.processInfo.environment["MIXPANEL_PROD_TOKEN"], !envToken.isEmpty {
+            logDebug("Using Mixpanel production token from environment", category: .analytics)
+            return envToken
+        }
+        #endif
+
+        // Priority 2: Bundle Info.plist (local development fallback)
+        #if DEBUG
+        if let bundleToken = Bundle.main.object(forInfoDictionaryKey: "MIXPANEL_DEBUG_TOKEN") as? String, !bundleToken.isEmpty {
+            logDebug("Using Mixpanel debug token from bundle", category: .analytics)
+            return bundleToken
+        }
+        #else
+        if let bundleToken = Bundle.main.object(forInfoDictionaryKey: "MIXPANEL_PROD_TOKEN") as? String, !bundleToken.isEmpty {
+            logDebug("Using Mixpanel production token from bundle", category: .analytics)
+            return bundleToken
+        }
+        #endif
+
+        logError("No Mixpanel token found in environment or bundle", category: .analytics)
+        return ""
     }
 
     // MARK: - User Management
 
     func identifyUser(_ userId: String) {
-        mixpanel?.identify(distinctId: userId)
+        guard let mixpanel = mixpanel else {
+            logDebug("Analytics disabled - skipping user identification", category: .analytics)
+            return
+        }
+        mixpanel.identify(distinctId: userId)
         logDebug("User identified: \(userId)", category: .analytics)
     }
 
     func setUserProperties(_ properties: [String: MixpanelType]) {
-        mixpanel?.people.set(properties: properties)
+        guard let mixpanel = mixpanel else {
+            logDebug("Analytics disabled - skipping user properties", category: .analytics)
+            return
+        }
+        mixpanel.people.set(properties: properties)
     }
 
     // MARK: - Event Tracking
 
     func track(event: String, properties: [String: MixpanelType] = [:]) {
-        mixpanel?.track(event: event, properties: properties)
+        guard let mixpanel = mixpanel else {
+            logDebug("Analytics disabled - skipping event: \(event)", category: .analytics)
+            return
+        }
+        mixpanel.track(event: event, properties: properties)
         logDebug("Event tracked: \(event)", category: .analytics)
     }
 
@@ -102,7 +149,12 @@ actor AnalyticsManager {
     // MARK: - Utility
 
     func flush() {
-        mixpanel?.flush()
+        guard let mixpanel = mixpanel else {
+            logDebug("Analytics disabled - skipping flush", category: .analytics)
+            return
+        }
+        mixpanel.flush()
+        logDebug("Analytics data flushed", category: .analytics)
     }
 }
 
