@@ -19,7 +19,8 @@ struct PawnPromotionView: View {
             Text("Pawn Promotion", bundle: .main, comment: "Title for pawn promotion dialog")
                 .font(.title2)
                 .fontWeight(.bold)
-            
+                .accessibilityIdentifier("pawn_promotion_title")
+
             Text("Choose a piece to promote to:", bundle: .main, comment: "Instruction text in pawn promotion dialog")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
@@ -32,7 +33,7 @@ struct PawnPromotionView: View {
                         VStack(spacing: 8) {
                             Text(pieceType.symbol(for: color))
                                 .font(.system(size: 40))
-                            
+
                             Text(pieceType.rawValue.capitalized)
                                 .font(.caption)
                                 .foregroundColor(.primary)
@@ -42,6 +43,7 @@ struct PawnPromotionView: View {
                         .cornerRadius(8)
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .accessibilityIdentifier("promote_to_\(pieceType.rawValue)")
                 }
             }
             

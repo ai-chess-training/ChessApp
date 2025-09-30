@@ -216,12 +216,14 @@ struct CoachingFeedbackView: View {
                 DrillsView(drills: feedback.drills)
             }
         }
+        .accessibilityIdentifier("move_feedback")
     }
 
     private func severityIndicator(_ severity: String) -> some View {
         Circle()
             .fill(severityColor(severity))
             .frame(width: 8, height: 8)
+            .accessibilityIdentifier("severity_indicator")
     }
 
     private func severityColor(_ severity: String) -> Color {
@@ -244,6 +246,7 @@ struct CoachingFeedbackView: View {
             Circle()
                 .fill(gameState.chessCoachAPI.isConnected ? .green : .red)
                 .frame(width: 6, height: 6)
+                .accessibilityIdentifier("connection_status_circle")
 
             Text(gameState.chessCoachAPI.isConnected ? "Connected" : "Disconnected")
                 .font(.caption2)

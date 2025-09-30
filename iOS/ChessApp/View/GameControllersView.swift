@@ -30,6 +30,7 @@ struct GameControlsView: View {
                 resignTrigger: $resignTrigger
             )
             .frame(maxWidth: .infinity)
+            .accessibilityIdentifier("game_controls")
             
             // Move History (Debug Mode Only)
             if gameState.isDebugMode && !gameState.moveHistory.isEmpty {
@@ -57,15 +58,16 @@ struct GameControlsView: View {
                 VStack(alignment: .leading) {
                     Text("Captured Pieces", bundle: .main, comment: "Title for captured pieces section")
                         .font(.headline)
-                    
+
                     ForEach([ChessColor.white, ChessColor.black], id: \.self) { color in
                         CapturedPiecesRow(
-                            color: color, 
+                            color: color,
                             pieces: gameState.capturedPieces.filter { $0.color == color }
                         )
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("captured_pieces")
             }
         }
         .padding()
@@ -74,6 +76,7 @@ struct GameControlsView: View {
         
         // Chess Coach Feedback
         CoachingFeedbackView(gameState: gameState)
+            .accessibilityIdentifier("coaching_feedback")
     }
 }
 

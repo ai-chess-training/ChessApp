@@ -25,6 +25,7 @@ struct UserProfileView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
                 )
+                .accessibilityIdentifier("profile_image")
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(authManager.userName)

@@ -37,6 +37,7 @@ struct ChessBoardView: View {
         .cornerRadius(8)
         .animation(.easeInOut(duration: 0.3), value: gameState.moveCount)
         .allowsHitTesting(!gameState.isAnalyzingMove)
+        .accessibilityIdentifier("chess_board")
         .overlay(
             // Coaching analysis overlay
             Group {

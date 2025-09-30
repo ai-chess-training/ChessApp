@@ -100,6 +100,7 @@ struct AppleSignInButton: View {
             .cornerRadius(8)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("apple_signin_button")
     }
 }
 
@@ -124,6 +125,7 @@ struct GoogleSignInButton: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("google_signin_button")
     }
 }
 
@@ -148,6 +150,7 @@ struct GuestSignInButton: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("guest_signin_button")
     }
 }
 

@@ -52,6 +52,17 @@ struct ChessSquareView: View {
         let isLightSquare = (position.row + position.col) % 2 == 0
         return isLightSquare ? .brown.opacity(0.05) : .brown.opacity(0.8)
     }
+
+    private var accessibilityLabel: String {
+        let squareName = position.notation
+        if let piece = piece {
+            let colorName = piece.color == .white ? "White" : "Black"
+            let pieceName = piece.type.rawValue.capitalized
+            return "\(colorName) \(pieceName) on \(squareName)"
+        } else {
+            return "Empty square \(squareName)"
+        }
+    }
     
     var body: some View {
         Button(action: {
@@ -96,6 +107,8 @@ struct ChessSquareView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: pieceSelectedTrigger)
         .sensoryFeedback(.impact(weight: .medium), trigger: moveSuccessTrigger)
         .sensoryFeedback(.error, trigger: moveFailTrigger)
+        .accessibilityIdentifier("square_\(position.notation)")
+        .accessibilityLabel(accessibilityLabel)
     }
     
     private func handleSquareTap() {
