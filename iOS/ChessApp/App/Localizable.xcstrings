@@ -325,13 +325,10 @@
     "Game Mode" : {
 
     },
-    "http://localhost:8000" : {
+    "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com" : {
 
     },
-    "Local Network" : {
-
-    },
-    "Localhost" : {
+    "Local Dev" : {
 
     },
     "Make a move to receive coaching feedback" : {
@@ -440,6 +437,9 @@
 
     },
     "Practice Suggestions" : {
+
+    },
+    "Production" : {
 
     },
     "Quick Presets" : {

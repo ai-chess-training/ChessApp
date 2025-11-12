@@ -10,7 +10,8 @@ import SwiftUI
 struct SettingsView: View {
     let gameState: ChessGameState
     @Environment(\.dismiss) private var dismiss
-    @State private var apiBaseURL: String = "http://localhost:8000"
+    @State private var apiBaseURL: String = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
+    @State private var originalAPIBaseURL: String = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
     @State private var apiKey: String = ""
     @State private var defaultSkillLevel: SkillLevel = .intermediate
     @State private var enableCoachingByDefault: Bool = true
@@ -29,7 +30,7 @@ struct SettingsView: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
 
-                        TextField("http://localhost:8000", text: $apiBaseURL)
+                        TextField("https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com", text: $apiBaseURL)
                             .textFieldStyle(.roundedBorder)
                             .keyboardType(.URL)
                             .autocapitalization(.none)
@@ -52,16 +53,14 @@ struct SettingsView: View {
                             .fontWeight(.medium)
 
                         HStack {
-                            Button("Localhost") {
-                                apiBaseURL = "http://localhost:8000"
+                            Button("Production") {
+                                apiBaseURL = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
 
-                            Button("Local Network") {
-                                if let localIP = getLocalIPAddress() {
-                                    apiBaseURL = "http://\(localIP):8000"
-                                }
+                            Button("Local Dev") {
+                                apiBaseURL = "http://localhost:8000"
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
@@ -178,7 +177,9 @@ struct SettingsView: View {
     // MARK: - Settings Management
 
     private func loadSettings() {
-        apiBaseURL = UserDefaults.standard.string(forKey: "ChessCoach.apiBaseURL") ?? "http://localhost:8000"
+        let savedURL = UserDefaults.standard.string(forKey: "ChessCoach.apiBaseURL") ?? "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
+        apiBaseURL = savedURL
+        originalAPIBaseURL = savedURL
         apiKey = UserDefaults.standard.string(forKey: "ChessCoach.apiKey") ?? ""
 
         if let savedLevel = UserDefaults.standard.string(forKey: "ChessCoach.defaultSkillLevel"),
@@ -191,15 +192,23 @@ struct SettingsView: View {
     }
 
     private func saveSettings() {
+        // Check if API URL has changed
+        let urlChanged = apiBaseURL != originalAPIBaseURL
+
         UserDefaults.standard.set(apiBaseURL, forKey: "ChessCoach.apiBaseURL")
         UserDefaults.standard.set(apiKey.isEmpty ? nil : apiKey, forKey: "ChessCoach.apiKey")
         UserDefaults.standard.set(defaultSkillLevel.rawValue, forKey: "ChessCoach.defaultSkillLevel")
         UserDefaults.standard.set(enableCoachingByDefault, forKey: "ChessCoach.enabledByDefault")
         UserDefaults.standard.set(shouldShowHistory, forKey: "ChessCoach.shouldShowHistory")
+
+        // Reset game if API URL changed
+        if urlChanged {
+            gameState.resetGameForSettings()
+        }
     }
 
     private func resetToDefaults() {
-        apiBaseURL = "http://localhost:8000"
+        apiBaseURL = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
         apiKey = ""
         defaultSkillLevel = .intermediate
         enableCoachingByDefault = true

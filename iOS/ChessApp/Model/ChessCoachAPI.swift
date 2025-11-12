@@ -148,15 +148,17 @@ class ChessCoachAPI: @unchecked Sendable {
     private(set) var lastError: String?
 
     init(baseURL: String? = nil, apiKey: String? = nil) {
-        // Use provided URL or get from settings, fallback to localhost
+        // Use provided URL or get from settings, fallback to production backend
         let configuredURL = baseURL ??
                           UserDefaults.standard.string(forKey: "ChessCoach.apiBaseURL") ??
-                          "http://localhost:8000"
+                          "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
 
         self.baseURL = configuredURL.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
 
-        // Use provided API key or get from settings
-        self.apiKey = apiKey ?? UserDefaults.standard.string(forKey: "ChessCoach.apiKey")
+        // Use provided API key, then check settings, then fallback to Secrets
+        self.apiKey = apiKey ??
+                      UserDefaults.standard.string(forKey: "ChessCoach.apiKey") ??
+                      Secrets.chessCoachAPIKey
 
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30.0
@@ -310,6 +312,16 @@ class ChessCoachAPI: @unchecked Sendable {
             isConnected = false
             return false
         }
+    }
+
+    // MARK: - Session Reset
+
+    func resetSession() {
+        logInfo("Resetting coaching session", category: .coaching)
+        currentSessionId = nil
+        isConnected = false
+        lastError = nil
+        logDebug("Coaching session cleared", category: .coaching)
     }
 }
 

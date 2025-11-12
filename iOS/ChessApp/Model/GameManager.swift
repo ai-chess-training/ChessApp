@@ -106,15 +106,24 @@ class ChessGameState: @unchecked Sendable {
     }
     
     func resetGame() {
-        selectedSquare = nil
-        board = Array(repeating: Array(repeating: nil, count: 8), count: 8)
-        currentPlayer = .white
-        gameStatus = .inProgress
+        resetGameState()
 
         // Track game start
         Task {
             await AnalyticsManager.shared.trackGameStarted(mode: gameMode, skillLevel: skillLevel)
         }
+
+        // Always start new coaching session for fresh game
+        Task {
+            await startNewCoachingSession()
+        }
+    }
+
+    private func resetGameState() {
+        selectedSquare = nil
+        board = Array(repeating: Array(repeating: nil, count: 8), count: 8)
+        currentPlayer = .white
+        gameStatus = .inProgress
         capturedPieces = []
         moveHistory = []
         moveCount = 0
@@ -129,11 +138,6 @@ class ChessGameState: @unchecked Sendable {
         currentMoveFeedback = nil
         isAnalyzingMove = false
         setupInitialBoard()
-
-        // Always start new coaching session for fresh game
-        Task {
-            await startNewCoachingSession()
-        }
     }
     
     private func setupInitialBoard() {
@@ -748,6 +752,25 @@ class ChessGameState: @unchecked Sendable {
         }
 
         isDebugMode = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
+    }
+
+    // MARK: - Game Reset
+
+    func resetGameForSettings() {
+        logInfo("Resetting game due to settings change", category: .coaching)
+
+        // Clear the API session
+        chessCoachAPI.resetSession()
+
+        // Reset only the game state (board, pieces, etc.)
+        resetGameState()
+
+        // Start fresh coaching session with new configuration
+        Task {
+            await startNewCoachingSession()
+        }
+
+        logDebug("Game reset for settings complete", category: .coaching)
     }
 }
 
