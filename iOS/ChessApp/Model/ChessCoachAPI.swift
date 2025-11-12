@@ -45,8 +45,8 @@ struct MoveFeedback: Codable {
     let bestMoveSan: String?
     let basic: String?
     let extended: String?
-    let tags: [String]
-    let drills: [DrillExercise]
+    let tags: [String]?
+    let drills: [DrillExercise]?
 
     enum CodingKeys: String, CodingKey {
         case moveNo = "move_no"

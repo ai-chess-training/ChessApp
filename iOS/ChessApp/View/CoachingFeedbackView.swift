@@ -207,13 +207,13 @@ struct CoachingFeedbackView: View {
             }
 
             // Tags
-            if !feedback.tags.isEmpty {
-                TagsView(tags: feedback.tags)
+            if let tags = feedback.tags, !tags.isEmpty {
+                TagsView(tags: tags)
             }
 
             // Practice drills
-            if !feedback.drills.isEmpty {
-                DrillsView(drills: feedback.drills)
+            if let drills = feedback.drills, !drills.isEmpty {
+                DrillsView(drills: drills)
             }
         }
     }
