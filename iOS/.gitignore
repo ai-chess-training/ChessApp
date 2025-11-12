@@ -100,17 +100,13 @@ xcuserdata/
 **/xcdebugger/
 xcdebugger/
 
+# Xcode scheme files and user data (may contain API keys/secrets in environment variables)
+ChessApp.xcodeproj/xcshareddata/xcschemes/*.xcscheme
+ChessApp.xcodeproj/xcuserdata
+
 # Xcode Debugger (Personal Breakpoints)
 **/Breakpoints_v2.xcbkptlist
 Breakpoints_v2.xcbkptlist
 
 # macOS
 .DS_Store
-
-# Environment Variables & Secrets
-.env
-.env.local
-.env.development
-.env.production
-Config/Secrets.swift
-**/Secrets.swift

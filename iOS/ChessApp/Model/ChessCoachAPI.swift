@@ -140,7 +140,7 @@ class ChessCoachAPI: @unchecked Sendable {
     // MARK: - Configuration
 
     private let baseURL: String
-    private let apiKey: String?
+    private let apiKey: String? //For Dev, hard code the API key here, don't check in
     private let session: URLSession
 
     private(set) var currentSessionId: String?
@@ -155,11 +155,13 @@ class ChessCoachAPI: @unchecked Sendable {
 
         self.baseURL = configuredURL.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
 
-        // Use provided API key, then check settings, then fallback to Secrets
+        // Priority order for API key:
+        // 1. Explicitly passed parameter
+        // 2. User setting from app (UserDefaults)
+        // 3. Environment variable (from .env or Xcode scheme)
         self.apiKey = apiKey ??
                       UserDefaults.standard.string(forKey: "ChessCoach.apiKey") ??
-                      Secrets.chessCoachAPIKey
-
+                      ProcessInfo.processInfo.environment["CHESS_COACH_API_KEY"]
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30.0
         config.timeoutIntervalForResource = 60.0

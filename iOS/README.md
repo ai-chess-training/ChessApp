@@ -1,18 +1,48 @@
-# CLAUDE.md
+# Chess App - iOS
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+A SwiftUI-based Chess application for iOS/macOS with AI coaching, game analysis, and multiplayer support.
+
+## Quick Start
+
+### First Time Setup
+
+1. **Clone the repo:**
+   ```bash
+   git clone <repository-url>
+   cd ChessApp/iOS
+   ```
+
+2. **Set up API credentials in Xcode:**
+   - Open `ChessApp.xcodeproj`
+   - Select **Product** > **Scheme** > **Edit Scheme**
+   - Go to **Run** > **Arguments** > **Environment Variables**
+   - Click **+** and add:
+     - **Name:** `CHESS_COACH_API_KEY`
+     - **Value:** (get from backend team)
+   - Click **Close**
+
+3. **Build and run:**
+   - Press `Cmd+B` to build
+   - Press `Cmd+R` to run
+
+For detailed setup instructions and troubleshooting, see [SETUP.md](SETUP.md)
 
 ## Project Overview
 
-This is a SwiftUI-based Chess application for iOS/macOS. The app features a visual chess board with piece movement, game state management, basic chess gameplay mechanics, and Google Sign-In authentication with guest mode support.
+This is a SwiftUI-based Chess application for iOS/macOS. The app features:
+- Visual chess board with piece movement and full chess rules
+- AI coaching with move analysis
+- Game state management and move history
+- Google Sign-In authentication with guest mode support
+- Production backend integration
 
 ## Build and Development Commands
 
 ### Building the Project
 - Open `ChessApp.xcodeproj` in Xcode to build and run the application
-- It built with the latest Xcode 26 - use Cmd+B to build, Cmd+R to run
+- Built with Xcode 15+ and Swift 6.0
+- Use Cmd+B to build, Cmd+R to run
 - Uses Swift Package Manager for GoogleSignIn dependency
-- Project upgraded to Swift 6.0 for enhanced concurrency safety
 
 ### Testing
 - Use Cmd+U in Xcode to run tests (when test files are added)
