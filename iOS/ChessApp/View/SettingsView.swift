@@ -52,18 +52,26 @@ struct SettingsView: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
 
-                        HStack {
-                            Button("Production") {
+                        HStack(spacing: 12) {
+                            Button(action: {
                                 apiBaseURL = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
+                            }) {
+                                Text("Production")
+                                    .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
+                            .tint(apiBaseURL == "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com" ? .blue : .gray)
 
-                            Button("Local Dev") {
+                            Button(action: {
                                 apiBaseURL = "http://localhost:8000"
+                            }) {
+                                Text("Local Dev")
+                                    .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
+                            .tint(apiBaseURL == "http://localhost:8000" ? .blue : .gray)
                         }
                     }
 

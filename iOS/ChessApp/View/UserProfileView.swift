@@ -33,11 +33,9 @@ struct UserProfileView: View {
             }
             
             Menu {
-                #if DEBUG
                 Button("Settings") {
                     showingSettings = true
                 }
-                #endif
 
                 if let appuser = authManager.user, !appuser.isGuest  {
                     // Signed in with Google - show Sign Out
