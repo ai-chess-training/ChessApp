@@ -52,6 +52,7 @@ class ChessGameState: @unchecked Sendable {
     var chessCoachAPI: ChessCoachAPI
     var currentMoveFeedback: MoveFeedback?
     var isAnalyzingMove: Bool = false
+    var isCreatingSession: Bool = false
     var skillLevel: SkillLevel = .intermediate
     var isWaitingForEngineMove: Bool = false
     
@@ -561,6 +562,7 @@ class ChessGameState: @unchecked Sendable {
     @MainActor
     private func startNewCoachingSession() async {
         logDebug("Starting new coaching session...", category: .coaching)
+        isCreatingSession = true
 
         do {
             let sessionResponse = try await chessCoachAPI.startNewGame(skillLevel: skillLevel, gameMode: gameMode.rawValue)
@@ -569,10 +571,12 @@ class ChessGameState: @unchecked Sendable {
             logDebug("Skill level: \(skillLevel.displayName)", category: .coaching)
             logDebug("Game mode: \(gameMode.displayName)", category: .coaching)
             logDebug("Starting position: \(sessionResponse.fenStart)", category: .coaching)
+            isCreatingSession = false
         } catch {
             logError("Failed to start coaching session: \(error)", category: .coaching)
             logError("Error type: \(type(of: error))", category: .coaching)
             logError("Error description: \(error.localizedDescription)", category: .coaching)
+            isCreatingSession = false
         }
     }
 

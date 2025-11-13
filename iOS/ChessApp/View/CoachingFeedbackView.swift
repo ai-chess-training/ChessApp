@@ -37,13 +37,43 @@ struct CoachingFeedbackView: View {
                     subtitle: "Chess Coach is reviewing your move",
                     color: .blue
                 )
-            } else if gameState.chessCoachAPI.currentSessionId == nil {
+            } else if gameState.isCreatingSession {
                 analysisStatusView(
                     icon: "cpu",
                     title: "Creating session...",
                     subtitle: "Setting up coaching session",
                     color: .orange
                 )
+            } else if gameState.chessCoachAPI.currentSessionId == nil {
+                // Session creation failed
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.red.opacity(0.1))
+                            .frame(width: 32, height: 32)
+
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.red)
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Session creation failed")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+
+                        Text(gameState.chessCoachAPI.lastError ?? "Unable to connect to Chess Coach")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
             }
 
             // Move feedback
