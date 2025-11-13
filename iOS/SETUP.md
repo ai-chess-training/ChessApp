@@ -52,9 +52,21 @@ The app uses a **priority system** to find the Chess Coach API key:
 3. **Environment variable** `CHESS_COACH_API_KEY` (from Xcode scheme)
 
 This means:
-- Users can override the API key in the app's Settings
-- Default API key comes from Xcode scheme environment variables
+- Users can override the API key in the app's Settings view
+- Default API key comes from Xcode scheme environment variables (development)
 - Good for local development and testing
+- Settings are persistent and will be used even after app restarts
+
+### Changing API Settings at Runtime
+
+Users can change both the API backend URL and API key in the app:
+1. Open **Settings**
+2. Modify **API Base URL** (or use Production/Local Dev quick presets)
+3. Modify **API Key** if needed
+4. Click **Test Connection** to verify
+5. Click **Save** to apply changes
+
+The ChessCoachAPI instance will be automatically updated with the new settings.
 
 ## For Production Builds
 

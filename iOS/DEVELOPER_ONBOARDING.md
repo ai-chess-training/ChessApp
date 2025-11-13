@@ -144,9 +144,11 @@ Enable debug mode in Settings to see:
 ### Switching Between Production and Local Dev
 
 In Settings:
-1. Click "Production" for cloud backend
-2. Click "Local Dev" for `http://localhost:8000`
-3. This automatically resets the current game
+1. Click "Production" for cloud backend (button turns blue when selected)
+2. Click "Local Dev" for `http://localhost:8000` (button turns blue when selected)
+3. You can also manually enter any custom API URL in the "API Base URL" field
+4. Changing the backend automatically resets the current game
+5. Click "Test Connection" to verify the backend is reachable
 
 ## Secrets Management
 
@@ -200,6 +202,17 @@ Make sure you've:
 This is normal - Xcode scheme variables don't auto-populate Settings UI. You can:
 1. Type API key directly in Settings UI
 2. Or rely on the Xcode scheme environment variable (app will use it automatically)
+
+### Settings UI Overview
+
+The Settings view provides:
+- **API Base URL**: Enter or select a backend server URL
+- **API Key**: Optional authentication key for the API
+- **Quick Presets**: Buttons for Production and Local Dev backends
+- **Skill Level**: Default difficulty for new coaching sessions
+- **Developer Settings**: Debug options like showing move history
+- **Connection Test**: Verify backend connectivity
+- **App Version**: View current version and build number
 
 ## Common Pitfalls
 
