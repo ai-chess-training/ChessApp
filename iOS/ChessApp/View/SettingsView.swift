@@ -148,6 +148,18 @@ struct SettingsView: View {
                 } footer: {
                     Text("This will reset all Chess Coach settings to their default values.")
                 }
+
+                // App Version Section
+                Section {
+                    HStack {
+                        Text("Version")
+                        Spacer()
+                        Text(appVersion)
+                            .foregroundColor(.secondary)
+                    }
+                } footer: {
+                    Text("ChessApp")
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
@@ -180,6 +192,14 @@ struct SettingsView: View {
         .onAppear {
             loadSettings()
         }
+    }
+
+    // MARK: - App Version
+
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
+        return "\(version) (Build \(build))"
     }
 
     // MARK: - Settings Management
