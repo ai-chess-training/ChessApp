@@ -13,6 +13,9 @@
     "API Key (Optional)" : {
 
     },
+    "App Version" : {
+
+    },
     "Are you sure you want to reset all settings to their default values?" : {
 
     },
@@ -292,7 +295,10 @@
     "Enable debug mode to show move history and additional development information during gameplay." : {
 
     },
-    "Enter OpenAI API key" : {
+    "Enter API base URL" : {
+
+    },
+    "Enter API key" : {
 
     },
     "Game Board" : {
@@ -323,12 +329,6 @@
       }
     },
     "Game Mode" : {
-
-    },
-    "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com" : {
-
-    },
-    "Local Dev" : {
 
     },
     "Make a move to receive coaching feedback" : {
@@ -437,9 +437,6 @@
 
     },
     "Practice Suggestions" : {
-
-    },
-    "Production" : {
 
     },
     "Quick Presets" : {
@@ -597,9 +594,6 @@
           }
         }
       }
-    },
-    "Version" : {
-
     }
   },
   "version" : "1.0"

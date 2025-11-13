@@ -756,6 +756,10 @@ class ChessGameState: @unchecked Sendable {
         }
 
         isDebugMode = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
+
+        // Reinitialize ChessCoachAPI to pick up updated baseURL and apiKey from settings
+        chessCoachAPI = ChessCoachAPI()
+        logDebug("ChessCoachAPI reinitialized with updated settings", category: .coaching)
     }
 
     // MARK: - Game Reset

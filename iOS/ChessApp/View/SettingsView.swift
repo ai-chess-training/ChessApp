@@ -7,11 +7,21 @@
 
 import SwiftUI
 
+// MARK: - Constants
+private struct APIPreset {
+    static let presets: [(name: String, url: String)] = [
+        ("Production", "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"),
+        ("Local Dev", "http://localhost:8000")
+    ]
+
+    static let defaultURL = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
+}
+
 struct SettingsView: View {
     let gameState: ChessGameState
     @Environment(\.dismiss) private var dismiss
-    @State private var apiBaseURL: String = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
-    @State private var originalAPIBaseURL: String = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
+    @State private var apiBaseURL: String = ""
+    @State private var originalAPIBaseURL: String = ""
     @State private var apiKey: String = ""
     @State private var defaultSkillLevel: SkillLevel = .intermediate
     @State private var enableCoachingByDefault: Bool = true
@@ -30,7 +40,7 @@ struct SettingsView: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
 
-                        TextField("https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com", text: $apiBaseURL)
+                        TextField("Enter API base URL", text: $apiBaseURL)
                             .textFieldStyle(.roundedBorder)
                             .keyboardType(.URL)
                             .autocapitalization(.none)
@@ -42,7 +52,7 @@ struct SettingsView: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
 
-                        SecureField("Enter OpenAI API key", text: $apiKey)
+                        SecureField("Enter API key", text: $apiKey)
                             .textFieldStyle(.roundedBorder)
                     }
 
@@ -53,25 +63,17 @@ struct SettingsView: View {
                             .fontWeight(.medium)
 
                         HStack(spacing: 12) {
-                            Button(action: {
-                                apiBaseURL = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
-                            }) {
-                                Text("Production")
-                                    .frame(maxWidth: .infinity)
+                            ForEach(APIPreset.presets, id: \.url) { preset in
+                                Button(action: {
+                                    apiBaseURL = preset.url
+                                }) {
+                                    Text(preset.name)
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                .tint(apiBaseURL == preset.url ? .blue : .gray)
                             }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                            .tint(apiBaseURL == "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com" ? .blue : .gray)
-
-                            Button(action: {
-                                apiBaseURL = "http://localhost:8000"
-                            }) {
-                                Text("Local Dev")
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                            .tint(apiBaseURL == "http://localhost:8000" ? .blue : .gray)
                         }
                     }
 
@@ -152,13 +154,11 @@ struct SettingsView: View {
                 // App Version Section
                 Section {
                     HStack {
-                        Text("Version")
+                        Text("App Version")
                         Spacer()
                         Text(appVersion)
                             .foregroundColor(.secondary)
                     }
-                } footer: {
-                    Text("ChessApp")
                 }
             }
             .navigationTitle("Settings")
@@ -205,7 +205,7 @@ struct SettingsView: View {
     // MARK: - Settings Management
 
     private func loadSettings() {
-        let savedURL = UserDefaults.standard.string(forKey: "ChessCoach.apiBaseURL") ?? "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
+        let savedURL = UserDefaults.standard.string(forKey: "ChessCoach.apiBaseURL") ?? APIPreset.defaultURL
         apiBaseURL = savedURL
         originalAPIBaseURL = savedURL
         apiKey = UserDefaults.standard.string(forKey: "ChessCoach.apiKey") ?? ""
@@ -236,7 +236,7 @@ struct SettingsView: View {
     }
 
     private func resetToDefaults() {
-        apiBaseURL = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
+        apiBaseURL = APIPreset.defaultURL
         apiKey = ""
         defaultSkillLevel = .intermediate
         enableCoachingByDefault = true
