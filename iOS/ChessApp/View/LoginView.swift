@@ -68,7 +68,7 @@ struct SignInSection: View {
             GuestSignInButton {
                 authManager.signInAsGuest()
             }
-            .padding()
+            .padding(.horizontal)
         }
         .frame(maxWidth: 500)
         .padding()
