@@ -237,3 +237,7 @@ struct GameModeSelectionView: View {
     }
 
 }
+
+#Preview {
+    GameControlsView(gameState: ChessGameState.sampleState())
+}

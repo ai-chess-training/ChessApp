@@ -188,7 +188,7 @@ struct CoachingFeedbackView: View {
     }
 
     private func feedbackContent(_ feedback: MoveFeedback) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading) {
             // Move info
             HStack {
                 Text("Move \(feedback.moveNo)")
@@ -403,35 +403,7 @@ struct DrillsView: View {
 
 #Preview {
     VStack {
-        CoachingFeedbackView(gameState: {
-            let state = ChessGameState()
-            state.currentMoveFeedback = MoveFeedback(
-                moveNo: 1,
-                side: "white",
-                san: "e4",
-                uci: "e2e4",
-                fenBefore: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                fenAfter: nil,
-                cpBefore: 0,
-                cpAfter: 25,
-                cpLoss: 0.0,
-                severity: "good",
-                bestMoveSan: "e4",
-                basic: "Excellent opening move! You control the center and develop quickly.",
-                extended: "The King's Pawn opening is one of the most popular and strong openings in chess. By playing e4, you immediately control the central squares d5 and f5, and you open lines for your bishop and queen.",
-                tags: ["opening", "center control", "development"],
-                drills: [
-                    DrillExercise(
-                        fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                        sideToMove: "white",
-                        objective: "Practice more King's Pawn openings",
-                        bestLineSan: ["e4", "e5"],
-                        altTrapsSan: nil
-                    )
-                ]
-            )
-            return state
-        }())
+        CoachingFeedbackView(gameState: ChessGameState.sampleState())
         Spacer()
     }
     .padding()
