@@ -110,3 +110,6 @@ Breakpoints_v2.xcbkptlist
 
 # macOS
 .DS_Store
+
+# Claude Code
+.claude
