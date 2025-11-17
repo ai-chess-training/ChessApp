@@ -11,13 +11,14 @@ struct CoachingFeedbackView: View {
     let gameState: ChessGameState
     @State private var showingSkillLevelAlert = false
     @State private var pendingSkillLevel: SkillLevel?
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
             HStack {
                 Image(systemName: "brain")
-                    .foregroundColor(.blue)
+                    .foregroundColor(theme.primaryColor)
                 Text("Chess Coach")
                     .font(.headline)
                     .fontWeight(.semibold)
@@ -35,7 +36,7 @@ struct CoachingFeedbackView: View {
                     icon: "brain",
                     title: "Analyzing move...",
                     subtitle: "Chess Coach is reviewing your move",
-                    color: .blue
+                    color: theme.primaryColor
                 )
             } else if gameState.isCreatingSession {
                 analysisStatusView(
@@ -288,7 +289,7 @@ struct CoachingFeedbackView: View {
                     }
                 }
                 .font(.caption2)
-                .foregroundColor(.blue)
+                .foregroundColor(theme.primaryColor)
             }
         }
     }
@@ -327,6 +328,7 @@ struct ExtendedFeedbackView: View {
 
 struct TagsView: View {
     let tags: [String]
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -343,8 +345,8 @@ struct TagsView: View {
                         .font(.caption2)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.1))
-                        .foregroundColor(.blue)
+                        .background(theme.primaryColor.opacity(0.1))
+                        .foregroundColor(theme.primaryColor)
                         .cornerRadius(4)
                 }
             }

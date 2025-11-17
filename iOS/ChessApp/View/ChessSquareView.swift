@@ -28,6 +28,7 @@ struct ChessSquareView: View {
     let isSelected: Bool
     @Bindable var gameState: ChessGameState
     let pieceAnimationNamespace: Namespace.ID
+    @Environment(AppTheme.self) private var theme
 
     // MARK: - Haptic Feedback State
 
@@ -65,7 +66,7 @@ struct ChessSquareView: View {
                     .fill(squareColor)
                     .overlay(
                         Rectangle()
-                            .stroke(isSelected ? Color.blue : Color.clear, lineWidth: SquareConstants.selectionBorderWidth)
+                            .stroke(isSelected ? theme.primaryColor : Color.clear, lineWidth: SquareConstants.selectionBorderWidth)
                     )
                     .shadow(color: Color.black.opacity(SquareConstants.squareShadowOpacity), radius: SquareConstants.squareShadowRadius, x: 0, y: 1)
                 

@@ -140,6 +140,7 @@ struct GameModeSelectionView: View {
     @Bindable var gameState: ChessGameState
     @State private var showingModeChangeAlert = false
     @State private var pendingGameMode: GameMode?
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -161,7 +162,7 @@ struct GameModeSelectionView: View {
             // Current mode indicator
             HStack {
                 Image(systemName: gameState.gameMode == .humanVsMachine ? "cpu" : "person.2")
-                    .foregroundColor(gameState.gameMode == .humanVsMachine ? .orange : .blue)
+                    .foregroundColor(gameState.gameMode == .humanVsMachine ? .orange : theme.primaryColor)
                 Text(gameState.gameMode.displayName)
                     .font(.caption)
                     .foregroundColor(.secondary)

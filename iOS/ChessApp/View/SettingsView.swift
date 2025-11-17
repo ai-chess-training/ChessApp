@@ -29,10 +29,48 @@ struct SettingsView: View {
     @State private var showingResetAlert = false
     @State private var testingConnection = false
     @State private var connectionResult: String?
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         NavigationStack {
             Form {
+                // Theme Section
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Primary Theme Color")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 60), spacing: 12)], spacing: 12) {
+                            ForEach(AppTheme.availableColors, id: \.name) { colorOption in
+                                VStack {
+                                    Circle()
+                                        .fill(colorOption.color)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(
+                                                    theme.primaryColor == colorOption.color ? Color.primary : Color.clear,
+                                                    lineWidth: 3
+                                                )
+                                        )
+                                        .frame(height: 60)
+                                        .onTapGesture {
+                                            theme.primaryColor = colorOption.color
+                                        }
+
+                                    Text(colorOption.name)
+                                        .font(.caption2)
+                                        .lineLimit(1)
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    Label("Appearance", systemImage: "paintpalette")
+                } footer: {
+                    Text("Choose your preferred app theme color.")
+                }
+
                 // Chess Coach API Section
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
@@ -72,7 +110,7 @@ struct SettingsView: View {
                                 }
                                 .buttonStyle(.bordered)
                                 .controlSize(.small)
-                                .tint(apiBaseURL == preset.url ? .blue : .gray)
+                                .tint(apiBaseURL == preset.url ? theme.primaryColor : .gray)
                             }
                         }
                     }
@@ -172,8 +210,10 @@ struct SettingsView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        saveSettings()
-                        gameState.refreshSettings()
+                        let settingsChanged = saveSettings()
+                        if settingsChanged {
+                            gameState.refreshSettings()
+                        }
                         dismiss()
                     }
                     .fontWeight(.semibold)
@@ -219,7 +259,7 @@ struct SettingsView: View {
         shouldShowHistory = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
     }
 
-    private func saveSettings() {
+    private func saveSettings() -> Bool {
         // Check if API URL has changed
         let urlChanged = apiBaseURL != originalAPIBaseURL
 
@@ -229,10 +269,9 @@ struct SettingsView: View {
         UserDefaults.standard.set(enableCoachingByDefault, forKey: "ChessCoach.enabledByDefault")
         UserDefaults.standard.set(shouldShowHistory, forKey: "ChessCoach.shouldShowHistory")
 
-        // Reset game if API URL changed
-        if urlChanged {
-            gameState.resetGameForSettings()
-        }
+        // Only return true if game-related settings changed (API, skill level, etc.)
+        // Color theme changes don't require game state refresh
+        return urlChanged
     }
 
     private func resetToDefaults() {

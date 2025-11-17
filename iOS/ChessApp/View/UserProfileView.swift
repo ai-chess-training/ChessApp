@@ -12,12 +12,13 @@ struct UserProfileView: View {
     let gameState: ChessGameState
     @State private var showingSignOutAlert = false
     @State private var showingSettings = false
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         HStack {
             // Profile image with user initial
             Circle()
-                .fill(Color.blue.gradient)
+                .fill(theme.primaryColor.gradient)
                 .frame(width: 30, height: 30)
                 .overlay(
                     Text(String(authManager.userName.prefix(1)).uppercased())

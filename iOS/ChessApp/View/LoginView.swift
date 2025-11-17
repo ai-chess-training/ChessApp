@@ -10,14 +10,15 @@ import AuthenticationServices
 
 struct LoginView: View {
     @Bindable var authManager: AuthenticationManager
-    
+    @Environment(AppTheme.self) private var theme
+
     var body: some View {
         VStack(spacing: 30) {
             // App Logo/Title
             VStack(spacing: 20) {
                 Image(systemName: "crown.fill")
                     .font(.system(size: 80))
-                    .foregroundColor(.blue)
+                    .foregroundColor(theme.primaryColor)
                 
                 Text("Chess Mentor")
                     .font(.largeTitle)
@@ -105,12 +106,13 @@ struct AppleSignInButton: View {
 
 struct GoogleSignInButton: View {
     let action: () -> Void
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         Button(action: action) {
             HStack {
                 Image(systemName: "globe")//If enable G login, need change the icon
-                    .foregroundColor(.blue)
+                    .foregroundColor(theme.primaryColor)
 
                 Text("Sign in with Google")
                     .foregroundColor(.primary)

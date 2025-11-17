@@ -56,6 +56,7 @@ struct CoachingAnalysisOverlay: View {
     let isWaitingForEngine: Bool
     @State private var rotation: Double = 0
     @State private var pulseScale: Double = 1.0
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         ZStack {
@@ -116,10 +117,11 @@ struct CoachingAnalysisOverlay: View {
     }
 
     private var iconColor: Color {
+        // Use theme color for normal analysis, keep orange for engine thinking
         if isWaitingForEngine {
             return .orange
         } else {
-            return .blue
+            return theme.primaryColor
         }
     }
 

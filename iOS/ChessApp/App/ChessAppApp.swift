@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct ChessAppApp: App {
     @State private var authManager = AuthenticationManager()
+    @State private var appTheme = AppTheme.shared
 
     init() {
         if FeatureFlags.isAnalyticsEnabled {
@@ -23,9 +24,11 @@ struct ChessAppApp: App {
             if authManager.isSignedIn {
                 ContentView()
                     .environment(authManager)
+                    .environment(appTheme)
                     .withAuthenticationUI(authManager)
             } else {
                 LoginView(authManager: authManager)
+                    .environment(appTheme)
                     .withAuthenticationUI(authManager)
             }
         }

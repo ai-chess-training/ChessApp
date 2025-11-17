@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var gameState = ChessGameState()
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(AuthenticationManager.self) private var authManager
+    @Environment(AppTheme.self) private var theme
     
     var body: some View {
         GeometryReader { ruler in
@@ -106,7 +107,7 @@ struct ContentView: View {
                     Text(String(localized: "Chess Mentor"))
                         .font(.headline)
                         .fontWeight(.semibold)
-                        .foregroundColor(.blue)
+                        .foregroundColor(theme.primaryColor)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     UserProfileView(authManager: authManager, gameState: gameState)

@@ -16,6 +16,9 @@
     "App Version" : {
 
     },
+    "Appearance" : {
+
+    },
     "Are you sure you want to reset all settings to their default values?" : {
 
     },
@@ -186,6 +189,9 @@
           }
         }
       }
+    },
+    "Choose your preferred app theme color." : {
+
     },
     "Coaching Defaults" : {
 
@@ -437,6 +443,9 @@
 
     },
     "Practice Suggestions" : {
+
+    },
+    "Primary Theme Color" : {
 
     },
     "Quick Presets" : {
