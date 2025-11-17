@@ -69,8 +69,6 @@ struct ContentView: View {
             }
         } detail: {
             VStack {
-                Spacer()
-
                 ChessBoardView(gameState: gameState)
 
                 Spacer()
@@ -100,7 +98,6 @@ struct ContentView: View {
                     ChessBoardView(gameState: gameState)
                     GameControlsView(gameState: gameState)
                 }
-                .padding(.top)
                 .padding()
             }
             .navigationTitle(String(localized: "Chess"))

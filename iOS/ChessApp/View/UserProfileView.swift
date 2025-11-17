@@ -18,7 +18,7 @@ struct UserProfileView: View {
             // Profile image with user initial
             Circle()
                 .fill(Color.blue.gradient)
-                .frame(width: 40, height: 40)
+                .frame(width: 30, height: 30)
                 .overlay(
                     Text(String(authManager.userName.prefix(1)).uppercased())
                         .font(.headline)
@@ -54,8 +54,6 @@ struct UserProfileView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding()
-        .background(Color(.systemGroupedBackground))
         .cornerRadius(12)
         .alert("Sign Out", isPresented: $showingSignOutAlert) {
             Button("Cancel", role: .cancel) { }
