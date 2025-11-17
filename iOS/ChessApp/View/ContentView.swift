@@ -100,9 +100,14 @@ struct ContentView: View {
                 }
                 .padding()
             }
-            .navigationTitle(String(localized: "Chess"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(String(localized: "Chess Mentor"))
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.blue)
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     UserProfileView(authManager: authManager, gameState: gameState)
                 }
