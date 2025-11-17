@@ -112,7 +112,7 @@ struct GameActionButtonsView: View {
     @Binding var resetTrigger: Bool
     @Binding var undoTrigger: Bool
     @Binding var resignTrigger: Bool
-
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         HStack(spacing: 20) {
@@ -121,6 +121,7 @@ struct GameActionButtonsView: View {
                 gameState.resetGame()
             }
             .buttonStyle(.borderedProminent)
+            .tint(theme.primaryColor)
             .sensoryFeedback(.impact(weight: .light), trigger: resetTrigger)
 
             Button(String(localized: "Resign", comment: "Resign game button text")) {

@@ -31,6 +31,9 @@
     "Better: %@" : {
 
     },
+    "Brightness" : {
+
+    },
     "Cancel" : {
       "comment" : "Cancel button text",
       "extractionState" : "manual",
@@ -190,7 +193,7 @@
         }
       }
     },
-    "Choose your preferred app theme color." : {
+    "Choose your preferred app theme color or pick a custom color." : {
 
     },
     "Coaching Defaults" : {
@@ -235,6 +238,12 @@
         }
       }
     },
+    "Custom" : {
+
+    },
+    "Custom Color" : {
+
+    },
     "Debug: %@" : {
       "comment" : "Debug mode toggle button text. %@ is ON or OFF",
       "extractionState" : "manual",
@@ -269,6 +278,9 @@
 
     },
     "Disconnected" : {
+
+    },
+    "Done" : {
 
     },
     "Draw!" : {
@@ -335,6 +347,9 @@
       }
     },
     "Game Mode" : {
+
+    },
+    "Hue" : {
 
     },
     "Make a move to receive coaching feedback" : {
@@ -512,6 +527,9 @@
       }
     },
     "Retry" : {
+
+    },
+    "Saturation" : {
 
     },
     "Save" : {

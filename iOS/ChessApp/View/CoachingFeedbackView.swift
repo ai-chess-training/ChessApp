@@ -168,11 +168,10 @@ struct CoachingFeedbackView: View {
     }
 
     private var skillLevelPicker: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        HStack(spacing: 4) {
             Text("Skill Level")
                 .font(.caption)
                 .foregroundColor(.secondary)
-
             Picker("Skill Level", selection: Binding(
                 get: { gameState.skillLevel },
                 set: { newLevel in
@@ -180,11 +179,10 @@ struct CoachingFeedbackView: View {
                 }
             )) {
                 ForEach(SkillLevel.allCases, id: \.self) { level in
-                    Text(level.displayName)
-                        .tag(level)
+                    Text(level.displayName).tag(level)
                 }
             }
-            .pickerStyle(SegmentedPickerStyle())
+            .tint(theme.primaryColor)
         }
     }
 

@@ -31,12 +31,8 @@ final class AppTheme {
         ("Blue", .blue),
         ("Green", .green),
         ("Purple", .purple),
-        ("Orange", .orange),
-        ("Pink", .pink),
-        ("Red", .red),
         ("Cyan", .cyan),
         ("Indigo", .indigo),
-        ("Yellow", .yellow),
         ("Mint", .mint),
     ]
 
