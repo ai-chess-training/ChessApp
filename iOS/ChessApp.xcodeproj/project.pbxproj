@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		263417452E842FAC001BE034 /* Mixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = 263417442E842FAC001BE034 /* Mixpanel */; };
 		2661A1912E7174CC00C70B39 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 2661A1902E7174CC00C70B39 /* GoogleSignIn */; };
 		2661A1932E7174CC00C70B39 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2661A1922E7174CC00C70B39 /* GoogleSignInSwift */; };
 /* End PBXBuildFile section */
@@ -20,7 +19,7 @@
 		26AB92842E72267000BD0578 /* Exceptions for "ChessApp" folder in "ChessApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				App/Info.plist,
 			);
 			target = 2667CDC02E6B0ECC00DCCA61 /* ChessApp */;
 		};
@@ -42,7 +41,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				263417452E842FAC001BE034 /* Mixpanel in Frameworks */,
 				2661A1912E7174CC00C70B39 /* GoogleSignIn in Frameworks */,
 				2661A1932E7174CC00C70B39 /* GoogleSignInSwift in Frameworks */,
 			);
@@ -97,7 +95,6 @@
 			packageProductDependencies = (
 				2661A1902E7174CC00C70B39 /* GoogleSignIn */,
 				2661A1922E7174CC00C70B39 /* GoogleSignInSwift */,
-				263417442E842FAC001BE034 /* Mixpanel */,
 			);
 			productName = ChessApp;
 			productReference = 2667CDC12E6B0ECC00DCCA61 /* ChessApp.app */;
@@ -390,11 +387,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		263417442E842FAC001BE034 /* Mixpanel */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 263417432E842FAC001BE034 /* XCRemoteSwiftPackageReference "mixpanel-swift" */;
-			productName = Mixpanel;
-		};
 		2661A1902E7174CC00C70B39 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2661A18F2E7174CC00C70B39 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
