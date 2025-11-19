@@ -113,3 +113,6 @@ Breakpoints_v2.xcbkptlist
 
 # Claude Code
 .claude
+
+# Environment Variables
+.env

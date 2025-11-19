@@ -8,11 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		263417452E842FAC001BE034 /* Mixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = 263417442E842FAC001BE034 /* Mixpanel */; };
+		264A62252ECDC19E00FDA680 /* .env in Resources */ = {isa = PBXBuildFile; fileRef = 264A62242ECDC19E00FDA680 /* .env */; };
 		2661A1912E7174CC00C70B39 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 2661A1902E7174CC00C70B39 /* GoogleSignIn */; };
 		2661A1932E7174CC00C70B39 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2661A1922E7174CC00C70B39 /* GoogleSignInSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		264A62242ECDC19E00FDA680 /* .env */ = {isa = PBXFileReference; lastKnownFileType = text; path = .env; sourceTree = "<group>"; };
 		2667CDC12E6B0ECC00DCCA61 /* ChessApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChessApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -54,6 +56,7 @@
 		2667CDB82E6B0ECC00DCCA61 = {
 			isa = PBXGroup;
 			children = (
+				264A62242ECDC19E00FDA680 /* .env */,
 				2667CDC32E6B0ECC00DCCA61 /* ChessApp */,
 				2698295A2E82B29600FD939B /* Frameworks */,
 				2667CDC22E6B0ECC00DCCA61 /* Products */,
@@ -146,6 +149,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				264A62252ECDC19E00FDA680 /* .env in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

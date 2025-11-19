@@ -158,10 +158,10 @@ class ChessCoachAPI: @unchecked Sendable {
         // Priority order for API key:
         // 1. Explicitly passed parameter
         // 2. User setting from app (UserDefaults)
-        // 3. Environment variable (from .env or Xcode scheme)
+        // 3. .env file (CHESS_COACH_API_KEY)
         self.apiKey = apiKey ??
                       UserDefaults.standard.string(forKey: "ChessCoach.apiKey") ??
-                      ProcessInfo.processInfo.environment["CHESS_COACH_API_KEY"]
+                      DotEnv.shared.get("CHESS_COACH_API_KEY")
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30.0
         config.timeoutIntervalForResource = 60.0
