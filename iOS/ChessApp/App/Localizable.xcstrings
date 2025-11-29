@@ -358,6 +358,9 @@
     "Move %lld" : {
 
     },
+    "Move History" : {
+      "comment" : "Title for move history section"
+    },
     "Move History (Debug)" : {
       "comment" : "Title for move history section in debug mode",
       "extractionState" : "manual",

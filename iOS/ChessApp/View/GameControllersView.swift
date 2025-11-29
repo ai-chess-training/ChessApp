@@ -28,9 +28,9 @@ struct GameControlsView: View {
             }
             
             // Move History (Debug Mode Only)
-            if gameState.isDebugMode && !gameState.moveHistory.isEmpty {
+            if gameState.shouldShowHistory && !gameState.moveHistory.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Move History (Debug)", bundle: .main, comment: "Title for move history section in debug mode")
+                    Text("Move History", bundle: .main, comment: "Title for move history section")
                         .font(.caption)
                         .foregroundColor(.orange)
                     
@@ -42,7 +42,6 @@ struct GameControlsView: View {
                                     .background(Color(.systemGray6))
                             }
                         }
-                        .padding(.horizontal)
                     }
                     .frame(maxHeight: 30)
                 }

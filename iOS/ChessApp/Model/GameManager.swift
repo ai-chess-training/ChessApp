@@ -60,8 +60,8 @@ class ChessGameState: @unchecked Sendable {
     var ruleEngine: ChessRuleEngine?
     private var moveHistoryManager = MoveHistoryManager()
     
-    // Debug flag for showing move history
-    var isDebugMode: Bool = false
+    // flag for showing move history
+    var shouldShowHistory: Bool = false
     
     // Castling rights
     var castlingRights = CastlingRights()
@@ -92,7 +92,7 @@ class ChessGameState: @unchecked Sendable {
             skillLevel = level
         }
 
-        isDebugMode = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
+        shouldShowHistory = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
 
         setupInitialBoard()
 
@@ -766,7 +766,7 @@ class ChessGameState: @unchecked Sendable {
             skillLevel = level
         }
 
-        isDebugMode = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
+        shouldShowHistory = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
 
         // Reinitialize ChessCoachAPI to pick up updated baseURL and apiKey from settings
         chessCoachAPI = ChessCoachAPI()

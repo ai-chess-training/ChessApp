@@ -42,8 +42,8 @@ struct CoachingFeedbackView: View {
                     subtitle: "Setting up coaching session",
                     color: .orange
                 )
-            } else if gameState.chessCoachAPI.currentSessionId == nil {
-                // Session creation failed
+            } else if gameState.chessCoachAPI.currentSessionId == nil && gameState.chessCoachAPI.lastError != nil {
+                // Session creation failed (only show if there's an actual error)
                 HStack(spacing: 12) {
                     ZStack {
                         Circle()

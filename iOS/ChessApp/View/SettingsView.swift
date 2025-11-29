@@ -21,11 +21,11 @@ struct SettingsView: View {
     let gameState: ChessGameState
     @Environment(AuthenticationManager.self) private var authManager
     @Environment(\.dismiss) private var dismiss
-    @State private var apiBaseURL: String = ""
+    @AppStorage("ChessCoach.apiBaseURL") private var apiBaseURL: String = "https://ai-chess-coach-backend-ed3d4b2641bc.herokuapp.com"
     @State private var originalAPIBaseURL: String = ""
-    @State private var apiKey: String = ""
+    @AppStorage("ChessCoach.apiKey") private var apiKey: String = ""
     @State private var defaultSkillLevel: SkillLevel = .intermediate
-    @State private var shouldShowHistory: Bool = false
+    @AppStorage("ChessCoach.shouldShowHistory") private var shouldShowHistory: Bool = false
     @State private var showingSignOutAlert = false
     @State private var showingSkillLevelAlert = false
     @State private var pendingSkillLevel: SkillLevel?
@@ -153,7 +153,13 @@ struct SettingsView: View {
 
                 // Developer Settings Section
                 Section {
-                    Toggle("Show Move History", isOn: $shouldShowHistory)
+                    Toggle("Show Move History", isOn: Binding(
+                        get: { shouldShowHistory },
+                        set: { newValue in
+                            shouldShowHistory = newValue
+                            gameState.shouldShowHistory = newValue
+                        }
+                    ))
 
                 } header: {
                     Label("Developer", systemImage: "hammer")
@@ -265,49 +271,43 @@ struct SettingsView: View {
     // MARK: - Settings Management
 
     private func loadSettings() {
-        let savedURL = UserDefaults.standard.string(forKey: "ChessCoach.apiBaseURL") ?? APIPreset.defaultURL
-        apiBaseURL = savedURL
-        originalAPIBaseURL = savedURL
-        apiKey = UserDefaults.standard.string(forKey: "ChessCoach.apiKey") ?? ""
+        // Store original API URL for change detection
+        originalAPIBaseURL = apiBaseURL
 
         // Load skill level from gameState
         defaultSkillLevel = gameState.skillLevel
 
-        shouldShowHistory = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
+        // Load shouldShowHistory into gameState
+        gameState.shouldShowHistory = shouldShowHistory
     }
 
     private func saveSettings() -> Bool {
         // Check if API URL has changed
         let urlChanged = apiBaseURL != originalAPIBaseURL
 
-        UserDefaults.standard.set(apiBaseURL, forKey: "ChessCoach.apiBaseURL")
-        UserDefaults.standard.set(apiKey.isEmpty ? nil : apiKey, forKey: "ChessCoach.apiKey")
-        UserDefaults.standard.set(defaultSkillLevel.rawValue, forKey: "ChessCoach.defaultSkillLevel")
-        UserDefaults.standard.set(shouldShowHistory, forKey: "ChessCoach.shouldShowHistory")
+        // Update skill level in gameState
+        gameState.updateSkillLevel(defaultSkillLevel)
 
+        // Update debug mode in gameState
+        gameState.shouldShowHistory = shouldShowHistory
+
+        // @AppStorage automatically saves apiBaseURL, apiKey, and shouldShowHistory
         // Only return true if game-related settings changed (API, skill level, etc.)
         // Color theme changes don't require game state refresh
         return urlChanged
     }
 
     private func resetToDefaults() {
+        // @AppStorage properties will automatically save these changes
         apiBaseURL = APIPreset.defaultURL
         apiKey = ""
         defaultSkillLevel = .intermediate
         shouldShowHistory = false
         connectionResult = nil
 
-        // Clear from UserDefaults
-        let keys = [
-            "ChessCoach.apiBaseURL",
-            "ChessCoach.apiKey",
-            "ChessCoach.defaultSkillLevel",
-            "ChessCoach.shouldShowHistory"
-        ]
-
-        for key in keys {
-            UserDefaults.standard.removeObject(forKey: key)
-        }
+        // Also update gameState
+        gameState.updateSkillLevel(.intermediate)
+        gameState.shouldShowHistory = false
     }
 
     private func handleSkillLevelChange(to newLevel: SkillLevel) {
