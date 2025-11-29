@@ -51,7 +51,6 @@ struct ContentView: View {
                 }
             }
         )
-        
     }
     
     // MARK: - iPad Landscape Layout

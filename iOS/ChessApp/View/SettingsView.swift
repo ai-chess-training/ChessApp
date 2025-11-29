@@ -19,14 +19,16 @@ private struct APIPreset {
 
 struct SettingsView: View {
     let gameState: ChessGameState
+    @Environment(AuthenticationManager.self) private var authManager
     @Environment(\.dismiss) private var dismiss
     @State private var apiBaseURL: String = ""
     @State private var originalAPIBaseURL: String = ""
     @State private var apiKey: String = ""
     @State private var defaultSkillLevel: SkillLevel = .intermediate
-    @State private var enableCoachingByDefault: Bool = true
     @State private var shouldShowHistory: Bool = false
-    @State private var showingResetAlert = false
+    @State private var showingSignOutAlert = false
+    @State private var showingSkillLevelAlert = false
+    @State private var pendingSkillLevel: SkillLevel?
     @State private var testingConnection = false
     @State private var connectionResult: String?
     @Environment(AppTheme.self) private var theme
@@ -34,8 +36,51 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // Theme Section
-                ThemeSectionView()
+                // User Info Section
+                Section {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(theme.primaryColor.gradient)
+                            .frame(width: 48, height: 48)
+                            .overlay(
+                                Text(String(authManager.userName.prefix(1)).uppercased())
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                            )
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(authManager.userName)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+
+                            if let appuser = authManager.user, !appuser.isGuest {
+                                Text("Signed in with Apple")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                Text("Guest User")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+
+                        Spacer()
+                    }
+                    .padding(.vertical, 8)
+
+                    if let appuser = authManager.user, !appuser.isGuest {
+                        Button("Sign Out", role: .destructive) {
+                            showingSignOutAlert = true
+                        }
+                    } else {
+                        Button("Sign In") {
+                            authManager.signOut()
+                        }
+                    }
+                } header: {
+                    Label("Account", systemImage: "person.crop.circle")
+                }
 
                 // Chess Coach API Section
                 Section {
@@ -87,20 +132,23 @@ struct SettingsView: View {
                     Text("Configure the Chess Coach backend server connection. Use localhost for local development or your Mac's IP address for testing on device.")
                 }
 
-                // Default Settings Section
+                // Skill Level Section
                 Section {
-                    Picker("Default Skill Level", selection: $defaultSkillLevel) {
+                    Picker("Skill Level", selection: Binding(
+                        get: { defaultSkillLevel },
+                        set: { newLevel in
+                            handleSkillLevelChange(to: newLevel)
+                        }
+                    )) {
                         ForEach(SkillLevel.allCases, id: \.self) { level in
                             Text(level.displayName).tag(level)
                         }
                     }
 
-                    Toggle("Enable Coaching by Default", isOn: $enableCoachingByDefault)
-
                 } header: {
-                    Label("Coaching Defaults", systemImage: "graduationcap")
+                    Label("Skill Level", systemImage: "graduationcap")
                 } footer: {
-                    Text("These settings will be applied to new games automatically.")
+                    Text("Choose your preferred difficulty level for coaching.")
                 }
 
                 // Developer Settings Section
@@ -145,15 +193,9 @@ struct SettingsView: View {
                 } header: {
                     Label("Connection Test", systemImage: "network")
                 }
-
-                // Reset Section
-                Section {
-                    Button("Reset to Defaults", role: .destructive) {
-                        showingResetAlert = true
-                    }
-                } footer: {
-                    Text("This will reset all Chess Coach settings to their default values.")
-                }
+                
+                // Theme Section
+                ThemeSectionView()
 
                 // App Version Section
                 Section {
@@ -185,14 +227,26 @@ struct SettingsView: View {
                     .fontWeight(.semibold)
                 }
             }
-            .alert("Reset Settings", isPresented: $showingResetAlert) {
+            .alert("Sign Out", isPresented: $showingSignOutAlert) {
                 Button("Cancel", role: .cancel) { }
-                Button("Reset", role: .destructive) {
-                    resetToDefaults()
-                    gameState.refreshSettings()
+                Button("Sign Out", role: .destructive) {
+                    authManager.signOut()
+                    dismiss()
                 }
             } message: {
-                Text("Are you sure you want to reset all settings to their default values?")
+                Text("Are you sure you want to sign out?")
+            }
+            .alert("Change Skill Level?", isPresented: $showingSkillLevelAlert) {
+                Button("Cancel", role: .cancel) {
+                    pendingSkillLevel = nil
+                }
+                Button("Reset & Change", role: .destructive) {
+                    confirmSkillLevelChange()
+                }
+            } message: {
+                if let newLevel = pendingSkillLevel {
+                    Text("Changing to \(newLevel.displayName) requires resetting the game because a new coaching session will be created. This will start a fresh game at the new difficulty level.")
+                }
             }
         }
         .onAppear {
@@ -216,12 +270,9 @@ struct SettingsView: View {
         originalAPIBaseURL = savedURL
         apiKey = UserDefaults.standard.string(forKey: "ChessCoach.apiKey") ?? ""
 
-        if let savedLevel = UserDefaults.standard.string(forKey: "ChessCoach.defaultSkillLevel"),
-           let level = SkillLevel(rawValue: savedLevel) {
-            defaultSkillLevel = level
-        }
+        // Load skill level from gameState
+        defaultSkillLevel = gameState.skillLevel
 
-        enableCoachingByDefault = UserDefaults.standard.bool(forKey: "ChessCoach.enabledByDefault")
         shouldShowHistory = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
     }
 
@@ -232,7 +283,6 @@ struct SettingsView: View {
         UserDefaults.standard.set(apiBaseURL, forKey: "ChessCoach.apiBaseURL")
         UserDefaults.standard.set(apiKey.isEmpty ? nil : apiKey, forKey: "ChessCoach.apiKey")
         UserDefaults.standard.set(defaultSkillLevel.rawValue, forKey: "ChessCoach.defaultSkillLevel")
-        UserDefaults.standard.set(enableCoachingByDefault, forKey: "ChessCoach.enabledByDefault")
         UserDefaults.standard.set(shouldShowHistory, forKey: "ChessCoach.shouldShowHistory")
 
         // Only return true if game-related settings changed (API, skill level, etc.)
@@ -244,7 +294,6 @@ struct SettingsView: View {
         apiBaseURL = APIPreset.defaultURL
         apiKey = ""
         defaultSkillLevel = .intermediate
-        enableCoachingByDefault = true
         shouldShowHistory = false
         connectionResult = nil
 
@@ -253,13 +302,35 @@ struct SettingsView: View {
             "ChessCoach.apiBaseURL",
             "ChessCoach.apiKey",
             "ChessCoach.defaultSkillLevel",
-            "ChessCoach.enabledByDefault",
             "ChessCoach.shouldShowHistory"
         ]
 
         for key in keys {
             UserDefaults.standard.removeObject(forKey: key)
         }
+    }
+
+    private func handleSkillLevelChange(to newLevel: SkillLevel) {
+        // Check if game is in progress
+        if gameState.moveCount > 0 && newLevel != gameState.skillLevel {
+            logDebug("Skill level change with game in progress - showing warning", category: .ui)
+            pendingSkillLevel = newLevel
+            showingSkillLevelAlert = true
+            return
+        }
+
+        // Direct change (no game in progress)
+        defaultSkillLevel = newLevel
+        gameState.updateSkillLevel(newLevel)
+    }
+
+    private func confirmSkillLevelChange() {
+        guard let newLevel = pendingSkillLevel else { return }
+
+        logDebug("User confirmed skill level change - resetting game and updating level", category: .ui)
+        defaultSkillLevel = newLevel
+        gameState.updateSkillLevel(newLevel)
+        pendingSkillLevel = nil
     }
 
     private func testConnection() {

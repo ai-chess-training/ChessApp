@@ -7,6 +7,9 @@
     "•" : {
 
     },
+    "Account" : {
+
+    },
     "API Base URL" : {
 
     },
@@ -19,7 +22,10 @@
     "Appearance" : {
 
     },
-    "Are you sure you want to reset all settings to their default values?" : {
+    "Are you sure you want to reset the game? Your current progress will be lost." : {
+
+    },
+    "Are you sure you want to resign? The opponent will win." : {
 
     },
     "Are you sure you want to sign out?" : {
@@ -196,7 +202,7 @@
     "Choose your preferred app theme color or pick a custom color." : {
 
     },
-    "Coaching Defaults" : {
+    "Choose your preferred difficulty level for coaching." : {
 
     },
     "Concepts" : {
@@ -268,12 +274,6 @@
         }
       }
     },
-    "Default Skill Level" : {
-
-    },
-    "Detailed Analysis" : {
-
-    },
     "Developer" : {
 
     },
@@ -306,9 +306,6 @@
           }
         }
       }
-    },
-    "Enable Coaching by Default" : {
-
     },
     "Enable debug mode to show move history and additional development information during gameplay." : {
 
@@ -347,6 +344,9 @@
       }
     },
     "Game Mode" : {
+
+    },
+    "Guest User" : {
 
     },
     "Hue" : {
@@ -496,10 +496,7 @@
     "Reset & Switch" : {
 
     },
-    "Reset Settings" : {
-
-    },
-    "Reset to Defaults" : {
+    "Reset Game" : {
 
     },
     "Resign" : {
@@ -525,6 +522,9 @@
           }
         }
       }
+    },
+    "Resign Game" : {
+
     },
     "Retry" : {
 
@@ -559,6 +559,9 @@
     "Sign Out" : {
 
     },
+    "Signed in with Apple" : {
+
+    },
     "Skill Level" : {
 
     },
@@ -590,12 +593,6 @@
       }
     },
     "Test Connection" : {
-
-    },
-    "These settings will be applied to new games automatically." : {
-
-    },
-    "This will reset all Chess Coach settings to their default values." : {
 
     },
     "Undo" : {

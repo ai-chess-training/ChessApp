@@ -17,19 +17,15 @@ struct GameControlsView: View {
     @State private var resignTrigger = false
     
     var body: some View {
+        // Chess Coach Feedback
+        CoachingFeedbackView(gameState: gameState)
+        
         VStack {
             // Game Mode Selection
             if FeatureFlags.hasMultiplePlayMode {
                 GameModeSelectionView(gameState: gameState)
+                    .padding()
             }
-
-            GameActionButtonsView(
-                gameState: gameState,
-                resetTrigger: $resetTrigger,
-                undoTrigger: $undoTrigger,
-                resignTrigger: $resignTrigger
-            )
-            .frame(maxWidth: .infinity)
             
             // Move History (Debug Mode Only)
             if gameState.isDebugMode && !gameState.moveHistory.isEmpty {
@@ -50,6 +46,7 @@ struct GameControlsView: View {
                     }
                     .frame(maxHeight: 30)
                 }
+                .padding()
             }
             
             // Captured Pieces
@@ -65,15 +62,12 @@ struct GameControlsView: View {
                         )
                     }
                 }
+                .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .padding()
         .background(Color(.systemGroupedBackground))
         .cornerRadius(12)
-        
-        // Chess Coach Feedback
-        CoachingFeedbackView(gameState: gameState)
     }
 }
 

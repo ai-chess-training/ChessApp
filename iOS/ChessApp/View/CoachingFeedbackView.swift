@@ -9,8 +9,6 @@ import SwiftUI
 
 struct CoachingFeedbackView: View {
     let gameState: ChessGameState
-    @State private var showingSkillLevelAlert = false
-    @State private var pendingSkillLevel: SkillLevel?
     @Environment(AppTheme.self) private var theme
 
     var body: some View {
@@ -24,11 +22,10 @@ struct CoachingFeedbackView: View {
                     .fontWeight(.semibold)
 
                 Spacer()
-
+                
+                // API connection status
+                connectionStatus
             }
-
-            // Skill level picker (coaching is always enabled)
-            skillLevelPicker
 
             // Analysis status with enhanced UI
             if gameState.isAnalyzingMove {
@@ -87,25 +84,11 @@ struct CoachingFeedbackView: View {
                     .italic()
             }
 
-            // API connection status
-            connectionStatus
+            
         }
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
-        .alert("Change Skill Level?", isPresented: $showingSkillLevelAlert) {
-            Button("Cancel", role: .cancel) {
-                // Revert to previous skill level
-                pendingSkillLevel = nil
-            }
-            Button("Reset & Change", role: .destructive) {
-                confirmSkillLevelChange()
-            }
-        } message: {
-            if let newLevel = pendingSkillLevel {
-                Text("Changing to \(newLevel.displayName) requires resetting the game because a new coaching session will be created. This will start a fresh game at the new difficulty level.")
-            }
-        }
     }
 
     // MARK: - Analysis Status View
@@ -144,48 +127,6 @@ struct CoachingFeedbackView: View {
         .cornerRadius(8)
     }
 
-    // MARK: - Skill Level Change Handling
-
-    private func handleSkillLevelChange(to newLevel: SkillLevel) {
-        // Check if game is in progress
-        if gameState.moveCount > 0 && newLevel != gameState.skillLevel {
-            logDebug("Skill level change with game in progress - showing warning", category: .ui)
-            pendingSkillLevel = newLevel
-            showingSkillLevelAlert = true
-            return
-        }
-
-        // Direct change (no game in progress or coaching disabled)
-        gameState.updateSkillLevel(newLevel)
-    }
-
-    private func confirmSkillLevelChange() {
-        guard let newLevel = pendingSkillLevel else { return }
-
-        logDebug("User confirmed skill level change - resetting game and updating level", category: .ui)
-        gameState.updateSkillLevel(newLevel)
-        pendingSkillLevel = nil
-    }
-
-    private var skillLevelPicker: some View {
-        HStack(spacing: 4) {
-            Text("Skill Level")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            Picker("Skill Level", selection: Binding(
-                get: { gameState.skillLevel },
-                set: { newLevel in
-                    handleSkillLevelChange(to: newLevel)
-                }
-            )) {
-                ForEach(SkillLevel.allCases, id: \.self) { level in
-                    Text(level.displayName).tag(level)
-                }
-            }
-            .tint(theme.primaryColor)
-        }
-    }
-
     private func feedbackContent(_ feedback: MoveFeedback) -> some View {
         VStack(alignment: .leading) {
             // Move info
@@ -216,11 +157,6 @@ struct CoachingFeedbackView: View {
                 Text(basic)
                     .font(.system(.callout))
                     .padding(.vertical, 4)
-            }
-
-            // Extended feedback (collapsible)
-            if let extended = feedback.extended, !extended.isEmpty {
-                ExtendedFeedbackView(extended: extended)
             }
 
             // Best move suggestion
@@ -288,37 +224,6 @@ struct CoachingFeedbackView: View {
                 }
                 .font(.caption2)
                 .foregroundColor(theme.primaryColor)
-            }
-        }
-    }
-}
-
-struct ExtendedFeedbackView: View {
-    let extended: String
-    @State private var isExpanded = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text("Detailed Analysis")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-
-                Spacer()
-
-                Button(action: { isExpanded.toggle() }) {
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-            }
-
-            if isExpanded {
-                Text(extended)
-                    .font(.caption)
-                    .padding(.vertical, 4)
-                    .animation(.easeInOut, value: isExpanded)
             }
         }
     }

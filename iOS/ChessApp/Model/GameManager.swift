@@ -120,6 +120,17 @@ class ChessGameState: @unchecked Sendable {
         }
     }
 
+    func resignGame() {
+        let winner = currentPlayer == .white ? ChessColor.black : ChessColor.white
+        gameStatus = .checkmate(winner: winner)
+
+        // Track game end
+        let duration = gameStartTime.map { Date().timeIntervalSince($0) } ?? 0
+        Task {
+            await AnalyticsManager.shared.trackGameEnded(winner: winner, moveCount: moveCount, duration: duration)
+        }
+    }
+
     private func resetGameState() {
         selectedSquare = nil
         board = Array(repeating: Array(repeating: nil, count: 8), count: 8)

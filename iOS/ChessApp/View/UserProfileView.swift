@@ -12,34 +12,37 @@ struct UserProfileView: View {
     let gameState: ChessGameState
     @State private var showingSignOutAlert = false
     @State private var showingSettings = false
+    @State private var showingResetAlert = false
+    @State private var showingResignAlert = false
     @Environment(AppTheme.self) private var theme
 
     var body: some View {
-        HStack {
-            // Profile image with user initial
-            Circle()
-                .fill(theme.primaryColor.gradient)
-                .frame(width: 30, height: 30)
-                .overlay(
-                    Text(String(authManager.userName.prefix(1)).uppercased())
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                )
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(authManager.userName)
-                    .font(.headline)
-                    .foregroundColor(.primary)
+        HStack(spacing: 12) {
+            // Reset button
+            Button(action: {
+                showingResetAlert = true
+            }) {
+                Image(systemName: "arrow.clockwise")
+                    .font(.body)
+                    .foregroundColor(theme.primaryColor)
             }
-            
+
+            // Resign button
+            Button(action: {
+                showingResignAlert = true
+            }) {
+                Image(systemName: "flag.fill")
+                    .font(.body)
+                    .foregroundColor(.red)
+            }
+
             Menu {
                 Button("Settings") {
                     showingSettings = true
                 }
 
                 if let appuser = authManager.user, !appuser.isGuest  {
-                    // Signed in with Google - show Sign Out
+                    // Signed in with Apple - show Sign Out
                     Button("Sign Out", role: .destructive) {
                         showingSignOutAlert = true
                     }
@@ -56,6 +59,14 @@ struct UserProfileView: View {
             }
         }
         .cornerRadius(12)
+        .alert("Reset Game", isPresented: $showingResetAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Reset", role: .destructive) {
+                gameState.resetGame()
+            }
+        } message: {
+            Text("Are you sure you want to reset the game? Your current progress will be lost.")
+        }
         .alert("Sign Out", isPresented: $showingSignOutAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Sign Out", role: .destructive) {
@@ -63,6 +74,14 @@ struct UserProfileView: View {
             }
         } message: {
             Text("Are you sure you want to sign out?")
+        }
+        .alert("Resign Game", isPresented: $showingResignAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Resign", role: .destructive) {
+                gameState.resignGame()
+            }
+        } message: {
+            Text("Are you sure you want to resign? The opponent will win.")
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView(gameState: gameState)

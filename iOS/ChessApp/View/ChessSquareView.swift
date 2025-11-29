@@ -14,7 +14,7 @@ struct ChessSquareView: View {
     private struct SquareConstants {
         static let availableMoveDotSize: CGFloat = 12
         static let selectionBorderWidth: CGFloat = 3
-        static let pieceFontScale: CGFloat = 0.7
+        static let pieceFontScale: CGFloat = 0.8
         static let shadowRadius: CGFloat = 1
         static let shadowOpacity: Double = 0.3
         static let squareShadowRadius: CGFloat = 1
