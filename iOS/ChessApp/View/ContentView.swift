@@ -94,12 +94,17 @@ struct ContentView: View {
     private var singleColumnLayout: some View {
         NavigationStack {
             ScrollView {
-                VStack {
+                VStack(spacing: 16) {
                     GameStatusView(gameState: gameState)
+                        .padding(.horizontal)
+
                     ChessBoardView(gameState: gameState)
+                        .padding(.horizontal)
+
                     GameControlsView(gameState: gameState)
+                        .padding(.horizontal)
                 }
-                .padding()
+                .padding(.vertical)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

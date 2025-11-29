@@ -13,7 +13,7 @@ struct ChessBoardView: View {
     // MARK: - Animation State
 
     @Namespace private var pieceAnimation
-    
+
     var body: some View {
         VStack(spacing: 0) {
             ForEach(0..<8, id: \.self) { row in
@@ -34,6 +34,8 @@ struct ChessBoardView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity)
+        .aspectRatio(1, contentMode: .fit)
         .cornerRadius(8)
         .animation(.easeInOut(duration: 0.3), value: gameState.moveCount)
         .allowsHitTesting(!gameState.isAnalyzingMove)
