@@ -66,8 +66,14 @@ struct ContentView: View {
             }
             .navigationTitle(String(localized: "Game Controls"))
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    ResetGameButtonView(gameState: gameState)
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    UserProfileView(authManager: authManager, gameState: gameState)
+                    HStack(spacing: 12) {
+                        ResignGameButtonView(gameState: gameState)
+                        SettingsMenuView(authManager: authManager, gameState: gameState)
+                    }
                 }
             }
         } detail: {
@@ -132,6 +138,9 @@ struct ContentView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    ResetGameButtonView(gameState: gameState)
+                }
                 ToolbarItem(placement: .principal) {
                     Text(String(localized: "Chess Mentor"))
                         .font(.headline)
@@ -139,7 +148,10 @@ struct ContentView: View {
                         .foregroundColor(theme.primaryColor)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    UserProfileView(authManager: authManager, gameState: gameState)
+                    HStack(spacing: 12) {
+                        ResignGameButtonView(gameState: gameState)
+                        SettingsMenuView(authManager: authManager, gameState: gameState)
+                    }
                 }
             }
             .sensoryFeedback(.impact(weight: .heavy), trigger: gameState.captureTrigger)
