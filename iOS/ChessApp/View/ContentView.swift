@@ -11,15 +11,18 @@ import SwiftUI
 struct ContentView: View {
     @State private var gameState = ChessGameState()
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(AuthenticationManager.self) private var authManager
     @Environment(AppTheme.self) private var theme
-    
+
     var body: some View {
         GeometryReader { ruler in
-            if ruler.size.width < ruler.size.height {
-                singleColumnLayout
-            } else {
+            // iPad landscape: use split view
+            // iPhone landscape or portrait: use single column
+            if horizontalSizeClass == .regular && verticalSizeClass == .regular {
                 splitViewLayout
+            } else {
+                singleColumnLayout
             }
         }
         .onAppear {
@@ -93,18 +96,40 @@ struct ContentView: View {
     // MARK: - Single Column Layout (iPhone + iPad Portrait)
     private var singleColumnLayout: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    GameStatusView(gameState: gameState)
-                        .padding(.horizontal)
+            GeometryReader { geometry in
+                if geometry.size.height > geometry.size.width {
+                    // Portrait orientation
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            GameStatusView(gameState: gameState)
+                                .padding(.horizontal)
 
-                    ChessBoardView(gameState: gameState)
-                        .padding(.horizontal)
+                            ChessBoardView(gameState: gameState)
+                                .padding(.horizontal)
 
-                    GameControlsView(gameState: gameState)
-                        .padding(.horizontal)
+                            GameControlsView(gameState: gameState)
+                                .padding(.horizontal)
+                        }
+                        .padding(.vertical)
+                    }
+                } else {
+                    // Landscape orientation
+                    HStack(spacing: 12) {
+                        ChessBoardView(gameState: gameState)
+                            .frame(maxHeight: .infinity)
+                            .padding(.vertical)
+
+                        ScrollView {
+                            VStack(spacing: 16) {
+                                GameStatusView(gameState: gameState)
+                                GameControlsView(gameState: gameState)
+                            }
+                            .padding()
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .padding(.horizontal)
                 }
-                .padding(.vertical)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
