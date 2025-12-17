@@ -14,12 +14,8 @@ struct ThemeSectionView: View {
     var body: some View {
         NavigationStack {
             Section {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Primary Theme Color")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 60), spacing: 12)], spacing: 12) {
+                VStack(alignment: .leading) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))]) {
                         ForEach(AppTheme.availableColors, id: \.name) { colorOption in
                             ColorOptionView(
                                 color: colorOption.color,
@@ -39,9 +35,21 @@ struct ThemeSectionView: View {
                     }
                 }
             } header: {
-                Label("Appearance", systemImage: "paintpalette")
+                HStack {
+                    Image(systemName: "paintpalette")
+                    Text("Appearance")
+                }
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.red, .orange, .yellow, .green, .blue, .purple],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical)
             } footer: {
-                Text("Choose your preferred app theme color or pick a custom color.")
+                Text("Choose your preferred app primary theme color or pick a custom one.")
             }
         }
     }

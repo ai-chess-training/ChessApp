@@ -16,9 +16,7 @@ struct ContentView: View {
     @Environment(AppTheme.self) private var theme
 
     var body: some View {
-        GeometryReader { ruler in
-            // iPad landscape: use split view
-            // iPhone landscape or portrait: use single column
+        Group {
             if horizontalSizeClass == .regular && verticalSizeClass == .regular {
                 splitViewLayout
             } else {
@@ -56,41 +54,13 @@ struct ContentView: View {
     // MARK: - iPad Landscape Layout
     private var splitViewLayout: some View {
         NavigationSplitView {
-            // Left sidebar with controls
-            ScrollView {
-                VStack {
-                    GameStatusView(gameState: gameState)
-                    GameControlsView(gameState: gameState)
-                }
-                .padding()
-            }
-            .navigationTitle(String(localized: "Game Controls"))
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    ResetGameButtonView(gameState: gameState)
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 12) {
-                        ResignGameButtonView(gameState: gameState)
-                        SettingsMenuView(authManager: authManager, gameState: gameState)
-                    }
-                }
-            }
+            iPadSideBar
         } detail: {
             VStack {
                 ChessBoardView(gameState: gameState)
-
                 Spacer()
             }
             .padding()
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text(String(localized: "Game Board"))
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                }
-            }
             .sensoryFeedback(.impact(weight: .heavy), trigger: gameState.captureTrigger)
             .sensoryFeedback(.success, trigger: gameState.checkmateTrigger)
             .sensoryFeedback(.error, trigger: gameState.checkTrigger)
@@ -98,42 +68,43 @@ struct ContentView: View {
         }
     }
     
-    // MARK: - Single Column Layout (iPhone + iPad Portrait)
+    private var iPadSideBar: some View {
+        ScrollView {
+            VStack {
+                GameStatusView(gameState: gameState)
+                GameControlsView(gameState: gameState)
+            }
+            .padding()
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                ResetGameButtonView(gameState: gameState)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 12) {
+                    ResignGameButtonView(gameState: gameState)
+                    SettingsMenuView(authManager: authManager, gameState: gameState)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Single Column Layout 
     private var singleColumnLayout: some View {
         NavigationStack {
-            GeometryReader { geometry in
-                if geometry.size.height > geometry.size.width {
-                    // Portrait orientation
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            GameStatusView(gameState: gameState)
-                                .padding(.horizontal)
-
-                            ChessBoardView(gameState: gameState)
-                                .padding(.horizontal)
-
-                            GameControlsView(gameState: gameState)
-                                .padding(.horizontal)
-                        }
-                        .padding(.vertical)
-                    }
-                } else {
-                    // Landscape orientation
-                    HStack(spacing: 12) {
+            Group {
+                ScrollView {
+                    VStack {
                         ChessBoardView(gameState: gameState)
-                            .frame(maxHeight: .infinity)
-                            .padding(.vertical)
-
-                        ScrollView {
-                            VStack(spacing: 16) {
-                                GameStatusView(gameState: gameState)
-                                GameControlsView(gameState: gameState)
-                            }
+                            .padding(.horizontal)
+                        
+                        GameStatusView(gameState: gameState)
                             .padding()
-                        }
-                        .frame(maxWidth: .infinity)
+                        
+                        GameControlsView(gameState: gameState)
+                            .padding(.horizontal)
                     }
-                    .padding(.horizontal)
+                    .padding(.vertical)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)

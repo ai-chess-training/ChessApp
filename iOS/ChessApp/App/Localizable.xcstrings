@@ -199,7 +199,7 @@
         }
       }
     },
-    "Choose your preferred app theme color or pick a custom color." : {
+    "Choose your preferred app primary theme color or pick a custom one." : {
 
     },
     "Choose your preferred difficulty level for coaching." : {
@@ -314,9 +314,6 @@
 
     },
     "Enter API key" : {
-
-    },
-    "Game Board" : {
 
     },
     "Game Controls" : {
@@ -461,9 +458,6 @@
 
     },
     "Practice Suggestions" : {
-
-    },
-    "Primary Theme Color" : {
 
     },
     "Quick Presets" : {
