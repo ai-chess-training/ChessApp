@@ -24,7 +24,7 @@ struct LoginView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 
-                Text("Play chess with the best mentor in the world!")
+                Text("Play chess with a fantastic mentor!")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
