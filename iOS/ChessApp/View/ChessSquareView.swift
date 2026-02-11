@@ -56,8 +56,8 @@ struct ChessSquareView: View {
     
     var body: some View {
         Button(action: {
-            // Don't handle taps during pawn promotion
-            if !gameState.showingPawnPromotion {
+            // Don't handle taps during pawn promotion or when no backend session is established
+            if !gameState.showingPawnPromotion && gameState.chessCoachAPI.isConnected {
                 handleSquareTap()
             }
         }) {
