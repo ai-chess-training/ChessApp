@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ wins by resignation!" : {
+      "comment" : "Alert message when a player resigns. %@ is the winning player name"
+    },
     "%@:" : {
 
     },

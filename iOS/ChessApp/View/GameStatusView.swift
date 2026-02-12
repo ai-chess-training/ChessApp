@@ -13,7 +13,7 @@ struct GameStatusView: View {
         switch gameState.gameStatus {
         case .inProgress:
             return gameState.isKingInCheck(color: gameState.currentPlayer)
-        case .checkmate, .stalemate, .draw:
+        case .checkmate, .resigned, .stalemate, .draw:
             return true
         }
     }
@@ -28,6 +28,10 @@ struct GameStatusView: View {
                         .foregroundColor(.red)
                 case .checkmate(let winner):
                     Text("Checkmate! \(winner.displayName) wins!", bundle: .main, comment: "Alert message when game ends in checkmate. %@ is the winning player name")
+                        .font(.title2)
+                        .foregroundColor(.green)
+                case .resigned(let winner):
+                    Text("\(winner.displayName) wins by resignation!", bundle: .main, comment: "Alert message when a player resigns. %@ is the winning player name")
                         .font(.title2)
                         .foregroundColor(.green)
                 case .stalemate:

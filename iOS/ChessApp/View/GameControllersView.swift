@@ -119,7 +119,7 @@ struct GameActionButtonsView: View {
 
             Button(String(localized: "Resign", comment: "Resign game button text")) {
                 resignTrigger.toggle()
-                gameState.gameStatus = .checkmate(winner: gameState.currentPlayer == .white ? .black : .white)
+                gameState.gameStatus = .resigned(winner: gameState.currentPlayer == .white ? .black : .white)
             }
             .buttonStyle(.bordered)
             .foregroundColor(.red)
