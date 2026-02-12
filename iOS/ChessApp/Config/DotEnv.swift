@@ -34,7 +34,7 @@ struct DotEnv {
             let envContent = try String(contentsOfFile: envPath, encoding: .utf8)
             parseEnvContent(envContent)
         } catch {
-            print("Warning: Failed to load .env file: \(error)")
+            logWarning("Failed to load .env file: \(error)", category: .network)
         }
     }
 
