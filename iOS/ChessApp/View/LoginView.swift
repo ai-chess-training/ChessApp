@@ -66,10 +66,12 @@ struct SignInSection: View {
                 .padding()
             }
 
-            GuestSignInButton {
-                authManager.signInAsGuest()
+            if FeatureFlags.isGuestLoginEnabled {
+                GuestSignInButton {
+                    authManager.signInAsGuest()
+                }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
         }
         .frame(maxWidth: 500)
         .padding()
