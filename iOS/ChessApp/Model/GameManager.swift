@@ -122,7 +122,7 @@ class ChessGameState: @unchecked Sendable {
 
     func resignGame() {
         let winner = currentPlayer == .white ? ChessColor.black : ChessColor.white
-        gameStatus = .checkmate(winner: winner)
+        gameStatus = .resigned(winner: winner)
 
         // Track game end
         let duration = gameStartTime.map { Date().timeIntervalSince($0) } ?? 0
@@ -872,6 +872,7 @@ enum ChessColor: String, CaseIterable {
 enum GameStatus {
     case inProgress
     case checkmate(winner: ChessColor)
+    case resigned(winner: ChessColor)
     case stalemate
     case draw
 }
