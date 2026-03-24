@@ -25,9 +25,17 @@ struct ContentView: View {
         }
         .onAppear {
             gameState.setCurrentUser(authManager.userName)
+            gameState.setAppleIdentityToken(authManager.appleIdentityToken)
+            gameState.setAppleRawNonce(authManager.appleRawNonce)
         }
         .onChange(of: authManager.userName) { _, newName in
             gameState.setCurrentUser(newName)
+        }
+        .onChange(of: authManager.appleIdentityToken) { _, newToken in
+            gameState.setAppleIdentityToken(newToken)
+        }
+        .onChange(of: authManager.appleRawNonce) { _, newNonce in
+            gameState.setAppleRawNonce(newNonce)
         }
         .overlay(
             // Pawn promotion overlay

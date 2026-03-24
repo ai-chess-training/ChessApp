@@ -8,6 +8,7 @@
 import Foundation
 import GoogleSignIn
 import AuthenticationServices
+import CryptoKit
 
 struct AppUser: Sendable {
     let name: String
@@ -69,6 +70,13 @@ class AuthenticationManager {
     var isSignedIn = false
     var user: AppUser?
     var errorMessage: String?
+    
+    /// Raw Apple identity token (JWT) for backend authentication
+    private(set) var appleIdentityToken: String?
+    
+    /// Raw (unhashed) nonce used for the Apple Sign-In request.
+    /// The backend must SHA256-hash this and compare it to the nonce claim inside the identity token.
+    private(set) var appleRawNonce: String?
 
     // UI provider for handling presentation (injected from UI layer)
     weak var uiProvider: AuthenticationUIProvider?
@@ -134,12 +142,23 @@ class AuthenticationManager {
             return
         }
 
-        uiProvider.presentAppleSignIn { [weak self] result in
+        // Generate a fresh nonce for this sign-in attempt
+        let rawNonce = Self.randomNonceString()
+        let hashedNonce = Self.sha256(rawNonce)
+
+        uiProvider.presentAppleSignIn(nonce: hashedNonce) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
             case .success(let authorization):
                 if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+
+                    // Extract identity token and store raw nonce for backend authentication
+                    if let tokenData = appleIDCredential.identityToken,
+                       let tokenString = String(data: tokenData, encoding: .utf8) {
+                        self.appleIdentityToken = tokenString
+                        self.appleRawNonce = rawNonce
+                    }
 
                     // Store Apple user info (important: only available on first sign-in)
                     self.storeAppleUserInfo(appleIDCredential)
@@ -238,6 +257,8 @@ class AuthenticationManager {
             userDefaults.removeObject(forKey: "apple_user_family_name")
         }
 
+        appleIdentityToken = nil
+        appleRawNonce = nil
         user = nil
         isSignedIn = false
     }
@@ -271,13 +292,10 @@ class AuthenticationManager {
             }
         }
 
-        // Check for stored Apple user
-        if let storedAppleUser = getStoredAppleUserInfo() {
-            Task { @MainActor in
-                self.user = storedAppleUser
-                self.isSignedIn = true
-            }
-        }
+        // Note: We no longer auto-restore Apple sessions from stored user info.
+        // The backend requires a fresh identity token (JWT) for authentication,
+        // which is only available during an active sign-in flow.
+        // The user will need to sign in with Apple on each app launch.
     }
 
 
@@ -328,5 +346,26 @@ class AuthenticationManager {
 
     func getAppleUserUniqueID() -> String? {
         return UserDefaults.standard.string(forKey: "apple_user_id")
+    }
+
+    // MARK: - Nonce Helpers
+
+    /// Generates a cryptographically secure random string for use as a nonce.
+    nonisolated static func randomNonceString(length: Int = 32) -> String {
+        precondition(length > 0)
+        var randomBytes = [UInt8](repeating: 0, count: length)
+        let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+        if errorCode != errSecSuccess {
+            fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+        }
+        let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        return String(randomBytes.map { charset[Int($0) % charset.count] })
+    }
+
+    /// Returns the SHA256 hash of the input string, hex-encoded.
+    nonisolated static func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        return hashedData.compactMap { String(format: "%02x", $0) }.joined()
     }
 }
