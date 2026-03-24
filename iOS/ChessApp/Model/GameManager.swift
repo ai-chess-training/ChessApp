@@ -66,6 +66,10 @@ class ChessGameState: @unchecked Sendable {
     // Castling rights
     var castlingRights = CastlingRights()
     
+    // Engine move highlight - shows where the engine moved from/to
+    var engineMoveFrom: ChessPosition?
+    var engineMoveTo: ChessPosition?
+    
     // Pawn promotion state
     var showingPawnPromotion: Bool = false
     var promotionMove: (from: ChessPosition, to: ChessPosition)?
@@ -149,6 +153,8 @@ class ChessGameState: @unchecked Sendable {
         moveHistoryManager.clear()
         currentMoveFeedback = nil
         isAnalyzingMove = false
+        engineMoveFrom = nil
+        engineMoveTo = nil
         setupInitialBoard()
     }
     
@@ -172,6 +178,9 @@ class ChessGameState: @unchecked Sendable {
     
     func selectSquare(_ position: ChessPosition) {
         selectedSquare = position
+        // Clear engine move highlight when human starts interacting
+        engineMoveFrom = nil
+        engineMoveTo = nil
     }
     
     func attemptMove(from: ChessPosition, to: ChessPosition) -> Bool {
@@ -709,6 +718,19 @@ class ChessGameState: @unchecked Sendable {
 
         if success {
             logDebug("Engine move executed successfully - no server analysis needed", category: .game)
+            // Highlight the engine's move on the board
+            engineMoveFrom = fromPos
+            engineMoveTo = toPos
+            
+            // Auto-clear highlight after 10 seconds
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(10))
+                // Only clear if the highlight hasn't already been replaced by a newer engine move
+                if engineMoveFrom == fromPos && engineMoveTo == toPos {
+                    engineMoveFrom = nil
+                    engineMoveTo = nil
+                }
+            }
         } else {
             logError("Failed to execute engine move", category: .game)
         }
