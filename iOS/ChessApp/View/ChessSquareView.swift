@@ -36,12 +36,26 @@ struct ChessSquareView: View {
     @State private var moveSuccessTrigger = false
     @State private var moveFailTrigger = false
     
+    // MARK: - Engine Move Highlight
+    
+    @State private var engineMoveGlow: CGFloat = 0.8
+    
+    private var isEngineMoveSquare: Bool {
+        position == gameState.engineMoveFrom || position == gameState.engineMoveTo
+    }
+    
     private var squareColor: Color {
-        // Priority order: King in check (highest) > Available moves > Base color (lowest)
+        // Priority order: King in check (highest) > Engine move > Available moves > Base color (lowest)
 
         // Highest priority: King in check
         if gameState.isKingInCheckAt(position: position) {
             return .red.opacity(0.6)
+        }
+        
+        // High priority: Engine move highlight
+        if isEngineMoveSquare {
+            let isOrigin = position == gameState.engineMoveFrom
+            return .orange.opacity(isOrigin ? 0.4 : 0.6)
         }
 
         // Medium priority: Available moves
@@ -81,6 +95,7 @@ struct ChessSquareView: View {
                     GeometryReader { geometry in
                         let squareSize = geometry.size.width
                         let customFont = Font.system(size: squareSize * SquareConstants.pieceFontScale)
+                        let isEngineDestination = position == gameState.engineMoveTo
 
                         Text(piece.type.symbol(for: piece.color))
                             .font(customFont)
@@ -88,8 +103,16 @@ struct ChessSquareView: View {
                             .multilineTextAlignment(.center)
                             .frame(width: geometry.size.width, height: geometry.size.height)
                             .shadow(color: .black.opacity(SquareConstants.shadowOpacity), radius: SquareConstants.shadowRadius, x: 0, y: 1)
+                            .scaleEffect(isEngineDestination ? 1.0 + (engineMoveGlow * 0.15) : 1.0)
                             .matchedGeometryEffect(id: "\(piece.type.rawValue)-\(piece.color.rawValue)-\(position.row)-\(position.col)", in: pieceAnimationNamespace)
                     }
+                }
+                
+                // Pulsing border on engine move destination
+                if position == gameState.engineMoveTo {
+                    RoundedRectangle(cornerRadius: 2)
+                        .stroke(Color.orange.opacity(engineMoveGlow), lineWidth: 3)
+                        .padding(1)
                 }
             }
         }
@@ -97,6 +120,20 @@ struct ChessSquareView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: pieceSelectedTrigger)
         .sensoryFeedback(.impact(weight: .medium), trigger: moveSuccessTrigger)
         .sensoryFeedback(.error, trigger: moveFailTrigger)
+        .onChange(of: gameState.engineMoveTo) { _, newValue in
+            if newValue != nil {
+                // Start pulsing animation
+                engineMoveGlow = 0.8
+                withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) {
+                    engineMoveGlow = 0.3
+                }
+            } else {
+                // Reset when cleared
+                withAnimation(.easeOut(duration: 0.2)) {
+                    engineMoveGlow = 0
+                }
+            }
+        }
     }
     
     private func handleSquareTap() {
