@@ -292,13 +292,10 @@ class AuthenticationManager {
             }
         }
 
-        // Check for stored Apple user
-        if let storedAppleUser = getStoredAppleUserInfo() {
-            Task { @MainActor in
-                self.user = storedAppleUser
-                self.isSignedIn = true
-            }
-        }
+        // Note: We no longer auto-restore Apple sessions from stored user info.
+        // The backend requires a fresh identity token (JWT) for authentication,
+        // which is only available during an active sign-in flow.
+        // The user will need to sign in with Apple on each app launch.
     }
 
 

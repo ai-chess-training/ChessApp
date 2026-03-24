@@ -95,11 +95,6 @@ class ChessGameState: @unchecked Sendable {
         shouldShowHistory = UserDefaults.standard.bool(forKey: "ChessCoach.shouldShowHistory")
 
         setupInitialBoard()
-
-        // Start coaching session automatically since coaching is always enabled
-        Task {
-            await startNewCoachingSession()
-        }
     }
     
     func setCurrentUser(_ userName: String) {
@@ -107,7 +102,17 @@ class ChessGameState: @unchecked Sendable {
     }
     
     func setAppleIdentityToken(_ token: String?) {
+        let tokenPreview = token.map { String($0.prefix(20)) + "..." } ?? "nil"
+        logDebug("setAppleIdentityToken called with token: \(tokenPreview)", category: .coaching)
         chessCoachAPI.appleIdentityToken = token
+        
+        // Start coaching session once we have a valid auth token
+        if token != nil && chessCoachAPI.currentSessionId == nil {
+            logDebug("Token available and no session exists, creating session...", category: .coaching)
+            Task {
+                await startNewCoachingSession()
+            }
+        }
     }
     
     func setAppleRawNonce(_ nonce: String?) {

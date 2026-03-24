@@ -283,12 +283,17 @@ class ChessCoachAPI: @unchecked Sendable {
     private func addAuthHeader(to request: inout URLRequest) {
         if let apiKey = apiKey {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            logDebug("Auth header: Bearer API key set", category: .api)
         }
         if let appleToken = appleIdentityToken {
             request.setValue(appleToken, forHTTPHeaderField: "X-Apple-Identity-Token")
+            logDebug("Auth header: X-Apple-Identity-Token set (\(appleToken.prefix(20))...)", category: .api)
+        } else {
+            logWarning("Auth header: No Apple identity token available", category: .api)
         }
         if let nonce = appleRawNonce {
             request.setValue(nonce, forHTTPHeaderField: "X-Apple-Nonce")
+            logDebug("Auth header: X-Apple-Nonce set", category: .api)
         }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }
