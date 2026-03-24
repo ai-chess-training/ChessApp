@@ -146,6 +146,9 @@ class ChessCoachAPI: @unchecked Sendable {
     /// Apple identity token (JWT) for user authentication with the backend
     var appleIdentityToken: String?
 
+    /// Raw (unhashed) nonce that was used for the Apple Sign-In request
+    var appleRawNonce: String?
+
     private(set) var currentSessionId: String?
     private(set) var isConnected: Bool = false
     private(set) var lastError: String?
@@ -283,6 +286,9 @@ class ChessCoachAPI: @unchecked Sendable {
         }
         if let appleToken = appleIdentityToken {
             request.setValue(appleToken, forHTTPHeaderField: "X-Apple-Identity-Token")
+        }
+        if let nonce = appleRawNonce {
+            request.setValue(nonce, forHTTPHeaderField: "X-Apple-Nonce")
         }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }

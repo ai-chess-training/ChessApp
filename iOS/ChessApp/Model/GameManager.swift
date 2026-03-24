@@ -110,6 +110,10 @@ class ChessGameState: @unchecked Sendable {
         chessCoachAPI.appleIdentityToken = token
     }
     
+    func setAppleRawNonce(_ nonce: String?) {
+        chessCoachAPI.appleRawNonce = nonce
+    }
+    
     func resetGame() {
         resetGameState()
 

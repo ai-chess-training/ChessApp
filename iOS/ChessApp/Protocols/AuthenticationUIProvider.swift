@@ -19,8 +19,10 @@ protocol AuthenticationUIProvider: AnyObject {
     func presentGoogleSignIn(completion: @escaping (Result<GIDGoogleUser, Error>) -> Void)
 
     /// Present the Apple Sign-In flow
-    /// - Parameter completion: Called when sign-in completes with result or error
-    func presentAppleSignIn(completion: @escaping (Result<ASAuthorization, Error>) -> Void)
+    /// - Parameters:
+    ///   - nonce: SHA256-hashed nonce to include in the Apple ID request for replay protection
+    ///   - completion: Called when sign-in completes with result or error
+    func presentAppleSignIn(nonce: String, completion: @escaping (Result<ASAuthorization, Error>) -> Void)
 
     /// Present an error alert to the user
     /// - Parameter message: The error message to display

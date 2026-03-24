@@ -45,13 +45,14 @@ class SwiftUIAuthenticationProvider: NSObject, AuthenticationUIProvider {
         }
     }
 
-    func presentAppleSignIn(completion: @escaping (Result<ASAuthorization, Error>) -> Void) {
+    func presentAppleSignIn(nonce: String, completion: @escaping (Result<ASAuthorization, Error>) -> Void) {
         // Store completion handler for delegate callbacks
         self.appleSignInCompletion = completion
 
         let appleIDProvider = ASAuthorizationAppleIDProvider()
         let request = appleIDProvider.createRequest()
         request.requestedScopes = [.fullName, .email]
+        request.nonce = nonce
 
         let authorizationController = ASAuthorizationController(authorizationRequests: [request])
         authorizationController.delegate = self
