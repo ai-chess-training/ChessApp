@@ -106,6 +106,10 @@ class ChessGameState: @unchecked Sendable {
         currentUserName = userName
     }
     
+    func setAppleIdentityToken(_ token: String?) {
+        chessCoachAPI.appleIdentityToken = token
+    }
+    
     func resetGame() {
         resetGameState()
 

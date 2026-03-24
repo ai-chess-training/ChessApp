@@ -25,9 +25,13 @@ struct ContentView: View {
         }
         .onAppear {
             gameState.setCurrentUser(authManager.userName)
+            gameState.setAppleIdentityToken(authManager.appleIdentityToken)
         }
         .onChange(of: authManager.userName) { _, newName in
             gameState.setCurrentUser(newName)
+        }
+        .onChange(of: authManager.appleIdentityToken) { _, newToken in
+            gameState.setAppleIdentityToken(newToken)
         }
         .overlay(
             // Pawn promotion overlay

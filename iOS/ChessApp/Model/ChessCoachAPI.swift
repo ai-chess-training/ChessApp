@@ -143,6 +143,9 @@ class ChessCoachAPI: @unchecked Sendable {
     private let apiKey: String? //For Dev, hard code the API key here, don't check in
     private let session: URLSession
 
+    /// Apple identity token (JWT) for user authentication with the backend
+    var appleIdentityToken: String?
+
     private(set) var currentSessionId: String?
     private(set) var isConnected: Bool = false
     private(set) var lastError: String?
@@ -277,6 +280,9 @@ class ChessCoachAPI: @unchecked Sendable {
     private func addAuthHeader(to request: inout URLRequest) {
         if let apiKey = apiKey {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        }
+        if let appleToken = appleIdentityToken {
+            request.setValue(appleToken, forHTTPHeaderField: "X-Apple-Identity-Token")
         }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }

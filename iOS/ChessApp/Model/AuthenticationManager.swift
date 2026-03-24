@@ -69,6 +69,9 @@ class AuthenticationManager {
     var isSignedIn = false
     var user: AppUser?
     var errorMessage: String?
+    
+    /// Raw Apple identity token (JWT) for backend authentication
+    private(set) var appleIdentityToken: String?
 
     // UI provider for handling presentation (injected from UI layer)
     weak var uiProvider: AuthenticationUIProvider?
@@ -140,6 +143,12 @@ class AuthenticationManager {
             switch result {
             case .success(let authorization):
                 if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+
+                    // Extract identity token for backend authentication
+                    if let tokenData = appleIDCredential.identityToken,
+                       let tokenString = String(data: tokenData, encoding: .utf8) {
+                        self.appleIdentityToken = tokenString
+                    }
 
                     // Store Apple user info (important: only available on first sign-in)
                     self.storeAppleUserInfo(appleIDCredential)
@@ -238,6 +247,7 @@ class AuthenticationManager {
             userDefaults.removeObject(forKey: "apple_user_family_name")
         }
 
+        appleIdentityToken = nil
         user = nil
         isSignedIn = false
     }
