@@ -90,10 +90,10 @@ struct AppleSignInButton: View {
         Button(action: action) {
             HStack {
                 Image(systemName: "applelogo")
-                    .font(.system(size: 18, weight: .medium))
+                    .font(.body.weight(.medium))
 
                 Text("Sign in with Apple")
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.callout.weight(.medium))
             }
             .frame(maxWidth: .infinity)
             .frame(height: 44) // Apple's recommended height

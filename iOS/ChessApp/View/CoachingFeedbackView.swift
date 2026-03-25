@@ -51,7 +51,7 @@ struct CoachingFeedbackView: View {
                             .frame(width: 32, height: 32)
 
                         Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 16, weight: .medium))
+                            .font(.callout.weight(.medium))
                             .foregroundColor(.red)
                     }
 
@@ -101,7 +101,7 @@ struct CoachingFeedbackView: View {
                     .frame(width: 32, height: 32)
 
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.callout.weight(.medium))
                     .foregroundColor(color)
             }
 

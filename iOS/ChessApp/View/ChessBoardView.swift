@@ -139,7 +139,7 @@ struct CoachingAnalysisOverlay: View {
                         }
 
                     Image(systemName: iconName)
-                        .font(.system(size: 32, weight: .medium))
+                        .font(.title.weight(.medium))
                         .foregroundColor(iconColor)
                         .rotationEffect(.degrees(rotation))
                         .onAppear {

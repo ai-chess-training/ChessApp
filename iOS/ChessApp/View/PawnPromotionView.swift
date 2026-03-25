@@ -31,7 +31,7 @@ struct PawnPromotionView: View {
                     }) {
                         VStack(spacing: 8) {
                             Text(pieceType.symbol(for: color))
-                                .font(.system(size: 40))
+                                .font(.largeTitle)
                             
                             Text(pieceType.rawValue.capitalized)
                                 .font(.caption)

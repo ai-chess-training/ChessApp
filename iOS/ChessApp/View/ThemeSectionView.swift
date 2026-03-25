@@ -98,7 +98,7 @@ struct CustomColorButtonView: View {
                             .foregroundColor(Color.gray.opacity(0.3))
 
                         Image(systemName: "plus")
-                            .font(.system(size: 24, weight: .semibold))
+                            .font(.title2.weight(.semibold))
                             .foregroundColor(.secondary)
                     }
                 }

@@ -86,7 +86,7 @@ struct CapturedPiecesRow: View {
                 ForEach(pieces.indices, id: \.self) { index in
                     if let piece = pieces[safe: index] {
                         Text(piece.type.symbol(for: piece.color))
-                            .font(.system(size: 20, weight: .regular, design: .default))
+                            .font(.title3)
                             .foregroundColor(.primary)
                             .frame(width: 24, height: 24)
                             .multilineTextAlignment(.center)
