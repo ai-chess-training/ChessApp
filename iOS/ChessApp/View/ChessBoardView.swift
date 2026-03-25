@@ -10,44 +10,102 @@ import SwiftUI
 struct ChessBoardView: View {
     @Bindable var gameState: ChessGameState
 
+    // MARK: - Constants
+    
+    private static let files = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    private static let ranks = ["8", "7", "6", "5", "4", "3", "2", "1"] // row 0 = rank 8, row 7 = rank 1
+    private static let labelSize: CGFloat = 16
+
     // MARK: - Animation State
 
     @Namespace private var pieceAnimation
 
     var body: some View {
         VStack(spacing: 0) {
-            ForEach(0..<8, id: \.self) { row in
-                HStack(spacing: 0) {
-                    ForEach(0..<8, id: \.self) { col in
-                        let position = ChessPosition(row: row, col: col)
-                        let piece = gameState.board[row][col]
+            // File labels (top)
+            fileLabelsRow
+            
+            // Board rows with rank labels on both sides
+            HStack(spacing: 0) {
+                // Rank labels (left side)
+                rankLabelsColumn
+                
+                // Chess board grid
+                VStack(spacing: 0) {
+                    ForEach(0..<8, id: \.self) { row in
+                        HStack(spacing: 0) {
+                            ForEach(0..<8, id: \.self) { col in
+                                let position = ChessPosition(row: row, col: col)
+                                let piece = gameState.board[row][col]
 
-                        ChessSquareView(
-                            position: position,
-                            piece: piece,
-                            isSelected: gameState.selectedSquare == position,
-                            gameState: gameState,
-                            pieceAnimationNamespace: pieceAnimation
-                        )
-                        .aspectRatio(1, contentMode: .fit)
+                                ChessSquareView(
+                                    position: position,
+                                    piece: piece,
+                                    isSelected: gameState.selectedSquare == position,
+                                    gameState: gameState,
+                                    pieceAnimationNamespace: pieceAnimation
+                                )
+                                .aspectRatio(1, contentMode: .fit)
+                            }
+                        }
                     }
                 }
+                .aspectRatio(1, contentMode: .fit)
+                .cornerRadius(8)
+                .overlay(
+                    // Coaching analysis overlay
+                    Group {
+                        if gameState.isAnalyzingMove {
+                            CoachingAnalysisOverlay(gameMode: gameState.gameMode, isWaitingForEngine: gameState.isWaitingForEngineMove)
+                                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                        }
+                    }
+                )
+                
+                // Rank labels (right side)
+                rankLabelsColumn
             }
+            
+            // File labels (bottom)
+            fileLabelsRow
         }
         .frame(maxWidth: .infinity)
-        .aspectRatio(1, contentMode: .fit)
-        .cornerRadius(8)
         .animation(.easeInOut(duration: 0.3), value: gameState.moveCount)
         .allowsHitTesting(!gameState.isAnalyzingMove)
-        .overlay(
-            // Coaching analysis overlay
-            Group {
-                if gameState.isAnalyzingMove {
-                    CoachingAnalysisOverlay(gameMode: gameState.gameMode, isWaitingForEngine: gameState.isWaitingForEngineMove)
-                        .transition(.opacity.combined(with: .scale(scale: 0.9)))
-                }
+    }
+    
+    // MARK: - Label Views
+    
+    private var rankLabelsColumn: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<8, id: \.self) { row in
+                Text(Self.ranks[row])
+                    .font(.caption2.monospaced())
+                    .foregroundColor(.secondary)
+                    .frame(width: Self.labelSize)
+                    .frame(maxHeight: .infinity)
             }
-        )
+        }
+    }
+    
+    private var fileLabelsRow: some View {
+        HStack(spacing: 0) {
+            // Spacer to align with rank label column
+            Color.clear
+                .frame(width: Self.labelSize, height: Self.labelSize)
+            
+            ForEach(0..<8, id: \.self) { col in
+                Text(Self.files[col])
+                    .font(.caption2.monospaced())
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: Self.labelSize)
+            }
+            
+            // Spacer to align with right rank label column
+            Color.clear
+                .frame(width: Self.labelSize, height: Self.labelSize)
+        }
     }
 }
 
