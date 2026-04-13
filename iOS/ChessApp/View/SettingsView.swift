@@ -32,6 +32,8 @@ struct SettingsView: View {
     @State private var testingConnection = false
     @State private var connectionResult: String?
     @Environment(AppTheme.self) private var theme
+    @Environment(GameCreditsManager.self) private var gameCreditsManager
+    @State private var showingPurchaseSheet = false
 
     var body: some View {
         NavigationStack {
@@ -151,6 +153,50 @@ struct SettingsView: View {
                     Text("Choose your preferred difficulty level for coaching.")
                 }
 
+                // Purchases Section
+                if FeatureFlags.isStoreKitEnabled {
+                    Section {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Game Credits")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                Text(gameCreditsManager.statusText)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Text("\(gameCreditsManager.remainingCredits)")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundStyle(theme.primaryColor)
+                        }
+
+                        Button {
+                            showingPurchaseSheet = true
+                        } label: {
+                            Label("Buy 5 Games — $0.99", systemImage: "cart.fill")
+                        }
+                        .tint(theme.primaryColor)
+
+                        Button {
+                            Task {
+                                await gameCreditsManager.restorePurchases()
+                            }
+                        } label: {
+                            Label("Restore Purchases", systemImage: "arrow.clockwise")
+                        }
+                    } header: {
+                        Label("Purchases", systemImage: "creditcard")
+                    } footer: {
+                        if gameCreditsManager.isInFreeTrial {
+                            Text("Free trial: \(gameCreditsManager.freeTrialDaysRemaining) days remaining. You get 1 free game per day during the trial.")
+                        } else {
+                            Text("Purchase game packs to continue playing.")
+                        }
+                    }
+                }
+
                 // Developer Settings Section
                 Section {
                     Toggle("Show Move History", isOn: Binding(
@@ -257,6 +303,11 @@ struct SettingsView: View {
         }
         .onAppear {
             loadSettings()
+        }
+        .sheet(isPresented: $showingPurchaseSheet) {
+            PurchaseView()
+                .environment(gameCreditsManager)
+                .environment(AppTheme.shared)
         }
     }
 
@@ -383,4 +434,5 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView(gameState: ChessGameState())
+        .environment(GameCreditsManager())
 }

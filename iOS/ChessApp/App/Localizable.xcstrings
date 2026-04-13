@@ -7,7 +7,26 @@
     "%@:" : {
 
     },
+    "%lld" : {
+
+    },
+    "%lld days remaining · 1 free game per day" : {
+
+    },
+    "%lld game%@ remaining" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld game%2$@ remaining"
+          }
+        }
+      }
+    },
     "•" : {
+
+    },
+    "1 free game available today + %lld purchased" : {
 
     },
     "Account" : {
@@ -185,6 +204,12 @@
           }
         }
       }
+    },
+    "Buy %@" : {
+
+    },
+    "Buy 5 Games — $0.99" : {
+
     },
     "Cancel" : {
       "comment" : "Cancel button text",
@@ -722,6 +747,15 @@
         }
       }
     },
+    "Free Trial Active" : {
+
+    },
+    "Free Trial Expired" : {
+
+    },
+    "Free trial: %lld days remaining. You get 1 free game per day during the trial." : {
+
+    },
     "Game Controls" : {
       "comment" : "Navigation title for game controls section",
       "extractionState" : "manual",
@@ -745,6 +779,9 @@
           }
         }
       }
+    },
+    "Game Credits" : {
+
     },
     "Game Mode" : {
       "localizations" : {
@@ -793,6 +830,12 @@
           }
         }
       }
+    },
+    "Keep playing and improving with your AI chess mentor" : {
+
+    },
+    "Loading products..." : {
+
     },
     "Make a move to receive coaching feedback" : {
       "localizations" : {
@@ -978,6 +1021,15 @@
         }
       }
     },
+    "Purchase game packs to continue playing." : {
+
+    },
+    "Purchase game packs to keep playing" : {
+
+    },
+    "Purchases" : {
+
+    },
     "Quick Presets" : {
       "localizations" : {
         "de" : {
@@ -1105,6 +1157,9 @@
           }
         }
       }
+    },
+    "Restore Purchases" : {
+
     },
     "Retry" : {
       "localizations" : {

@@ -70,6 +70,10 @@ class ChessGameState: @unchecked Sendable {
     var engineMoveFrom: ChessPosition?
     var engineMoveTo: ChessPosition?
     
+    // Game credits / purchase gating
+    var gameCreditsManager: GameCreditsManager?
+    var showPurchasePrompt: Bool = false
+    
     // Pawn promotion state
     var showingPawnPromotion: Bool = false
     var promotionMove: (from: ChessPosition, to: ChessPosition)?
@@ -124,6 +128,15 @@ class ChessGameState: @unchecked Sendable {
     }
     
     func resetGame() {
+        // Check if user has credits to start a new game
+        if let creditsManager = gameCreditsManager, !creditsManager.canStartNewGame {
+            showPurchasePrompt = true
+            return
+        }
+        
+        // Consume a game credit
+        gameCreditsManager?.consumeGameCredit()
+        
         resetGameState()
 
         // Track game start

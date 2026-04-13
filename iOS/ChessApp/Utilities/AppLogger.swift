@@ -50,6 +50,7 @@ public enum LogCategory: String, CaseIterable, Sendable {
     case analytics = "Analytics"
     case auth = "Authentication"
     case network = "Network"
+    case purchases = "Purchases"
 
     var identifier: String { rawValue }
 }

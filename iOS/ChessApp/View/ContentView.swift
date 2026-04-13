@@ -14,6 +14,7 @@ struct ContentView: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(AuthenticationManager.self) private var authManager
     @Environment(AppTheme.self) private var theme
+    @Environment(GameCreditsManager.self) private var gameCreditsManager
 
     var body: some View {
         Group {
@@ -27,6 +28,7 @@ struct ContentView: View {
             gameState.setCurrentUser(authManager.userName)
             gameState.setAppleIdentityToken(authManager.appleIdentityToken)
             gameState.setAppleRawNonce(authManager.appleRawNonce)
+            gameState.gameCreditsManager = gameCreditsManager
         }
         .onChange(of: authManager.userName) { _, newName in
             gameState.setCurrentUser(newName)
@@ -57,6 +59,14 @@ struct ContentView: View {
                 }
             }
         )
+        .sheet(isPresented: Binding(
+            get: { gameState.showPurchasePrompt },
+            set: { gameState.showPurchasePrompt = $0 }
+        )) {
+            PurchaseView()
+                .environment(gameCreditsManager)
+                .environment(AppTheme.shared)
+        }
     }
     
     // MARK: - iPad Landscape Layout
@@ -146,6 +156,7 @@ struct ContentView: View {
     let authManager = AuthenticationManager()
     ContentView()
         .environment(authManager)
+        .environment(GameCreditsManager())
         .withAuthenticationUI(authManager)
 }
 
@@ -153,5 +164,6 @@ struct ContentView: View {
     let authManager = AuthenticationManager()
     ContentView()
         .environment(authManager)
+        .environment(GameCreditsManager())
         .withAuthenticationUI(authManager)
 }

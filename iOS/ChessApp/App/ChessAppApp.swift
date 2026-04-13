@@ -11,6 +11,7 @@ import SwiftUI
 struct ChessAppApp: App {
     @State private var authManager = AuthenticationManager()
     @State private var appTheme = AppTheme.shared
+    @State private var gameCreditsManager = GameCreditsManager()
 
     init() {
         if FeatureFlags.isAnalyticsEnabled {
@@ -25,7 +26,11 @@ struct ChessAppApp: App {
                 ContentView()
                     .environment(authManager)
                     .environment(appTheme)
+                    .environment(gameCreditsManager)
                     .withAuthenticationUI(authManager)
+                    .task {
+                        await gameCreditsManager.loadProducts()
+                    }
             } else {
                 LoginView(authManager: authManager)
                     .environment(appTheme)
