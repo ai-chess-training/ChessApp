@@ -171,9 +171,30 @@ struct PurchaseView: View {
                     }
                     .padding(.vertical, 4)
                 }
-            } else {
+            } else if creditsManager.isLoadingProducts {
                 ProgressView("Loading products...")
                     .padding()
+            } else if let loadError = creditsManager.productsLoadError {
+                GroupBox {
+                    VStack(spacing: 12) {
+                        Label(loadError, systemImage: "wifi.exclamationmark")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+
+                        Button {
+                            Task {
+                                await creditsManager.loadProducts()
+                            }
+                        } label: {
+                            Label("Try Again", systemImage: "arrow.clockwise")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.regular)
+                    }
+                    .padding(.vertical, 4)
+                }
             }
 
             if let error = creditsManager.purchaseError {

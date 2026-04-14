@@ -26,6 +26,8 @@ class GameCreditsManager: @unchecked Sendable {
     var products: [Product] = []
     var isPurchasing = false
     var purchaseError: String?
+    var isLoadingProducts = false
+    var productsLoadError: String?
 
     // MARK: - Credits State
 
@@ -147,14 +149,38 @@ class GameCreditsManager: @unchecked Sendable {
 
     // MARK: - Load Products
 
+    private enum ProductLoadError: Error {
+        case timeout
+    }
+
     func loadProducts() async {
+        isLoadingProducts = true
+        productsLoadError = nil
+
         do {
-            let storeProducts = try await Product.products(for: GameProduct.allProductIDs)
-            products = storeProducts
-            logInfo("Loaded \(storeProducts.count) products from StoreKit", category: .purchases)
+            let loaded = try await withThrowingTaskGroup(of: [Product].self) { group in
+                group.addTask {
+                    try await Product.products(for: GameProduct.allProductIDs)
+                }
+                group.addTask {
+                    try await Task.sleep(for: .seconds(10))
+                    throw ProductLoadError.timeout
+                }
+                let result = try await group.next()!
+                group.cancelAll()
+                return result
+            }
+            products = loaded
+            logInfo("Loaded \(loaded.count) products from StoreKit", category: .purchases)
+        } catch ProductLoadError.timeout {
+            productsLoadError = "Timed out loading products. Check your connection and try again."
+            logWarning("Product load timed out", category: .purchases)
         } catch {
+            productsLoadError = error.localizedDescription
             logError("Failed to load products: \(error.localizedDescription)", category: .purchases)
         }
+
+        isLoadingProducts = false
     }
 
     // MARK: - Purchase
